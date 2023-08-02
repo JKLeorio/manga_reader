@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% load custom_tags_extra %}
+
+
+<div class="container">
+  <div class="row row-cols-5 g-4">
+    {% for manga_object in manga_objects%}
+    <div class="col">
+      <div class="p border bg-light">
+      <div class="card" style="width: 14rem;">
+      <img src="{{manga_object.manga_cover.url}}" class="img-thumbnail" alt="...">
+      <div class="card-body">
+      <div class="d-flex justify-content-center">
+              <a href="{% url 'manga_detail' manga_object.pk %}" class="btn btn-primary" data-bs-toggle="tooltip"
+      data-bs-html="true" data-bs-placement="auto" 
+      title="<div class='card bg-transparent'>
+                <div class='card-body'>
+                  <h5 class='card-title'>{{manga_object.name}}</h5>
+                  <p class='card-text'>{{manga_object.description|cut_description}}</p>
+                  <p class='card-text'><small class='text-muted'>{{manga_object|verbose_name:'release_year'}} : {{manga_object.release_year}}</small></p>
+                  <p class='card-text'><small class='text-muted'>{{manga_object|verbose_name:'status'}} : {{manga_object.status}}</small></p>
+                  <p class='card-text'><small class='text-muted'>{{manga_object|verbose_name:'author'}} : {{manga_object.author}}</small></p>
+                  <p class='card-text'><small class='text-muted'>{{manga_object|verbose_name:'painter'}} : {{manga_object.painter}}</small></p>
+                </div>
+              </div>
+            </div>"
+      >{{ manga_object.name }}</a>
+      </div>
+    </div>
+  </div>
+      </div>
+    </div>
+    {% empty %}
+    <p>Пусто</p>
+
+    {% endfor %}
+  </div>
+</div>
+
+
+<script type="text/javascript">
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  return new bootstrap.Tooltip(tooltipTriggerEl)
+})
+</script>
+{% endblock%}

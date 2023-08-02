@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load custom_tags_extra %}
+
+{% block content %}
+
+<div class="container">
+  <ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">Информация</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">Главы</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">Обсуждение</button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="myTabContent">
+    <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+      <div class="card mb-3" style="width: 100%;">
+    <div class="row g-0">
+      <div class="col-md-4">
+        <img src="{{manga_object.manga_cover.url}}" class="img-fluid rounded-start" alt="...">
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+          <h4 class="card-title"><strong>{{manga_object.name}}</strong></h4>
+          <p class="card-text">{{manga_object.description}}</p>
+
+          <p class="card-text"><small class="text-muted">{{manga_object|verbose_name:"release_year"}} : {{manga_object.release_year}}</small></p>
+          <p class="card-text"><small class="text-muted">{{manga_object|verbose_name:"status"}} : {{manga_object.status}}</small></p>
+          <p class="card-text"><small class="text-muted">{{manga_object|verbose_name:"author"}} : {{manga_object.author}}</small></p>
+          <p class="card-text"><small class="text-muted">{{manga_object|verbose_name:"painter"}} : {{manga_object.painter}}</small></p>
+          
+          <p class="card-text"><small class="text-muted">{{manga_object|verbose_name:"release_format"}} :
+           {% for elem in manga_object.release_format.all %}
+           {{ elem }}{% if not forloop.last %}, {% endif %}
+           {% endfor %}
+        </small></p>
+
+        <div class="d-grid gap-2">
+        <a href="volume/1/chapter/1" class="btn btn-info" type="button"><h4>Начать читать с первой главы</h4></a>
+        <a href="" class="btn btn-warning" type="button"><h4>Начать читать с последней главы</h4></a>
+      </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+    <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+      <div class="list-group">
+        {% for volume in manga_object.volume_set.all%}
+          {% for chapter in volume.chapter_set.all%}
+            <a href="{% url 'chapter_detail' m_pk=manga_object.pk volume=volume.pk chapter=chapter.pk page=1%}" class="list-group-item list-group-item-action">
+              Том {{ volume.pk }} глава {{ chapter.pk}} - {{chapter.title}}
+            </a>
+          {% endfor %}
+        {% endfor %}
+      </div>
+  </div>
+
+    <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+    ...
+  </div>
+  </div>
+</div>
+{% endblock %}

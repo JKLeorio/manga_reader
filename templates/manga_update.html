@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+  <h1>Редактировать</h1>
+  <form method="post" action="{% url 'manga_update' manga.pk %}" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form | crispy }}
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#delete-modal">
+    Удалить
+    </button>
+  </form>
+    <!-- Modal -->
+    <div class="modal fade" id="delete-modal" tabindex="-1" role="dialog" aria-labelledby="delete-modal-label" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="delete-modal-label">Подтвердите удаление</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть">
+            </button>
+          </div>
+          <div class="modal-body">
+            Вы уверены, что хотите удалить это объявление?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Отмена</button>
+            <form method="post" action="{% url 'manga_delete' manga.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">Удалить</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock %}
