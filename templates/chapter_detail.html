@@ -32,7 +32,7 @@
 			  	<div class="overflow-auto" style="max-width: 150px; max-height: 300px;">
 			  		{% for page in page_objects%}
 			  		<li>
-				      <a class="dropdown-item" href="#" image_url="{{page.image.url}}" position="{{forloop.counter}}">{{page.number}}</a></li>
+				      <a class="dropdown-item" href="#" image_url="{{page.image.url}}" position="{{forloop.counter}}" page="{{page.number}}">{{page.number}}</a></li>
 				    </li>
 <!-- 						{% if page.number == page_object.number%}
 						    <li>
@@ -52,7 +52,7 @@
 			<a href="{% url 'manga_detail' manga_object.pk %}" class="btn btn-primary btn-lg">{{manga_object.name}}</a>
 		</div>
 		<div class="col">
-			<button type="button" class="btn btn-primary btn-lg" disabled>Страница {{page_object.number}}</button>
+			<button type="button" id="pageN" class="btn btn-primary btn-lg" disabled>Страница {{page_object.number}}</button>
 		</div>
 	</div>
 
@@ -94,7 +94,8 @@ $(document).ready(function() {
         		images[0].style.display = "none"
         	}
         	if(!buff.length){
-        		$( "#images_block" ).append("<img src='"+ image_url + "' class='img-fluid' alt='...'" + $(this).attr("position") +">")
+        		$("#pageN").html($("#pageN").html().slice(0, -1) + $(this).attr("page"));
+        		$( "#images_block" ).append("<img src='"+ image_url + "' class='img-fluid' alt='...' position='" + $(this).attr("position") +"' page='" + $(this).attr("page") + "'>")
         	}
         	else {
         		buff[0].css("display", "block");
@@ -138,7 +139,8 @@ $(document).ready(function() {
         			var image_url = $("a.dropdown-item").filter(function() {
         				return String(current_position) == this.getAttribute("position");
         			})
-        			$( "#images_block" ).append("<img src='"+ image_url[0].getAttribute("image_url") + "' class='img-fluid' alt='...' position='" + current_position + "'>");
+        			$("#pageN").html($("#pageN").html().slice(0, -1) + image_url[0].getAttribute("page"));
+        			$( "#images_block" ).append("<img src='"+ image_url[0].getAttribute("image_url") + "' class='img-fluid' alt='...' position='" + current_position + "' page='" + image_url[0].getAttribute("page") + "'>");
         		}
         	}
         	else {

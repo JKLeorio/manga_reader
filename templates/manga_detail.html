@@ -40,8 +40,8 @@
         </small></p>
 
         <div class="d-grid gap-2">
-        <a href="volume/1/chapter/1" class="btn btn-info" type="button"><h4>Начать читать с первой главы</h4></a>
-        <a href="" class="btn btn-warning" type="button"><h4>Начать читать с последней главы</h4></a>
+        <a href="{% url 'chapter_detail' m_pk=manga_object.pk volume=1 chapter=1 page=1%}" class="btn btn-info" type="button"><h4>Начать читать с первой главы</h4></a>
+        <a href="{% url 'chapter_detail' m_pk=manga_object.pk volume=manga_object.volume_set.all.last.number chapter=manga_object.volume_set.all.last.chapter_set.all.last.number page=1%}" class="btn btn-warning" type="button"><h4>Начать читать с последней главы</h4></a>
       </div>
 
         </div>
@@ -54,7 +54,7 @@
       <div class="list-group">
         {% for volume in manga_object.volume_set.all%}
           {% for chapter in volume.chapter_set.all%}
-            <a href="{% url 'chapter_detail' m_pk=manga_object.pk volume=volume.pk chapter=chapter.pk page=1%}" class="list-group-item list-group-item-action">
+            <a href="{% url 'chapter_detail' m_pk=manga_object.pk volume=volume.number chapter=chapter.number page=1%}" class="list-group-item list-group-item-action">
               Том {{ volume.pk }} глава {{ chapter.pk}} - {{chapter.title}}
             </a>
           {% endfor %}

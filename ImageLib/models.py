@@ -8,7 +8,7 @@ YEAR_CHOICES = [(r,r) for r in range(1945, datetime.date.today().year+1)]
 
 def Manga_cover_directory_path(instance, filename):
     extension = filename.split('.')[-1]
-    manga_name = instance.manga.name
+    manga_name = instance.name
     filename = f"{manga_name}_cover.{extension}"
     return f"{manga_name}/cover/{filename}"
 
