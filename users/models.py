@@ -10,6 +10,7 @@ from django.contrib.auth.models import (
 from django.utils import timezone
 from django.dispatch import receiver
 
+
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
@@ -70,16 +71,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         self.image.delete()
         super().delete()
 
-
     class Meta:
         verbose_name = 'Системный пользователь'
         verbose_name_plural = "Системные пользователи"
 
 
-
 @receiver(models.signals.pre_save, sender=User)
 def auto_delete_file_on_change(sender, instance, **kwargs):
-
     if not instance.pk:
         return False
 
@@ -92,4 +90,3 @@ def auto_delete_file_on_change(sender, instance, **kwargs):
         models.signals.pre_save.disconnect(auto_delete_file_on_change, sender=sender)
         old_file.delete()
         models.signals.pre_save.connect(auto_delete_file_on_change, sender=sender)
-        

@@ -1,4 +1,5 @@
 from django import forms
+from django.forms import inlineformset_factory
 from django.forms.widgets import CheckboxSelectMultiple
 from django.contrib.admin import site as admin_site
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
@@ -8,7 +9,7 @@ from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 # from django.forms import widgets
 # from django.conf import settings
 
-from .models import Manga, Chapter, Volume
+from .models import Manga, Chapter, Volume, Page, Painter, Author
 
 
 # class RelatedFieldWidgetCanAdd(widgets.Select):
@@ -35,23 +36,20 @@ from .models import Manga, Chapter, Volume
 
 
 class MangaForm(forms.ModelForm):
+    class Meta:
+        model = Manga
+        fields = ["name", "description", "release_year", "status", "author", "painter", "release_format", "manga_cover"]
 
-
-	class Meta:
-		model = Manga
-		fields = ["name", "description","release_year", "status", "author","painter", "release_format", "manga_cover"]
-
-		widgets = {
-            #'manga_cover': forms.ClearableFileInput(attrs={'multiple': True}),
+        widgets = {
+            # 'manga_cover': forms.ClearableFileInput(attrs={'multiple': True}),
             'release_format': CheckboxSelectMultiple(),
         }
 
 
 class VolumeForm(forms.ModelForm):
-
-	class Meta:
-		model = Volume
-		fields = ["number", "manga"]
+    class Meta:
+        model = Volume
+        fields = ["number", "manga"]
 
 
 # class MultipleFileInput(forms.ClearableFileInput):
@@ -71,46 +69,77 @@ class VolumeForm(forms.ModelForm):
 #             result = single_file_clean(data, initial)
 #         return result
 
+class PainterForm(forms.ModelForm):
+    class Meta:
+        model = Painter
+        fields = ["first_name", "last_name", "Date_of_Birth"]
+
+
+class AuthorForm(forms.ModelForm):
+    class Meta:
+        model = Author
+        fields = ["first_name", "last_name", "Date_of_Birth"]
 
 
 class ChapterForm(forms.ModelForm):
-	manga = forms.ModelChoiceField(label = "Манга",queryset=Manga.objects.all())
-	# volume = forms.ModelChoiceField(label = "Том", queryset=Volume.objects.all())
-	# number = forms.IntegerField(label = "Номер")
-	images = forms.FileField(label = "Страницы/Архив")
+    # manga = forms.ModelChoiceField(label="Манга", queryset=Manga.objects.all())
+    # volume = forms.ModelChoiceField(label = "Том", queryset=Volume.objects.all())
+    # number = forms.IntegerField(label = "Номер")
+    # images = forms.FileField(label="Страницы/Архив")
+
+    # volume = forms.ModelChoiceField(
+    # 	required=False,
+    # 	queryset=Volume.objects.all(),
+    # 	widget=RelatedFieldWidgetCanAdd(Volume, related_url="volume_create"))
+
+    # volume = forms.ModelChoiceField(required=True,
+    # 	queryset=Volume.objects.all(),
+    # 	label = "Volume",
+    # 	empty_label="-----")
+
+    # def __init__(self, *args, **kwargs):
+    # 	super().__init__(*args, **kwargs)
+    # 	self.fields['volume'].widget = (
+    # 		RelatedFieldWidgetWrapper(
+    # 			self.fields['volume'].widget,
+    # 			self.instance._meta.get_field('volume').remote_field,
+    # 			admin_site,
+    # 		)
+    # 	)
+
+    class Meta:
+        model = Chapter
+        fields = ["title", "volume", "number"]
 
 
-	# volume = forms.ModelChoiceField(
-	# 	required=False,
-	# 	queryset=Volume.objects.all(),
-	# 	widget=RelatedFieldWidgetCanAdd(Volume, related_url="volume_create"))
-	
-	# volume = forms.ModelChoiceField(required=True, 
-	# 	queryset=Volume.objects.all(), 
-	# 	label = "Volume",  
-	# 	empty_label="-----")
+# widgets = {
+# 	"images" : forms.ClearableFileInput(attrs={'multiple': True})
+# }
 
-	
-	# def __init__(self, *args, **kwargs):
-	# 	super().__init__(*args, **kwargs)
-	# 	self.fields['volume'].widget = (
-	# 		RelatedFieldWidgetWrapper( 
-	# 			self.fields['volume'].widget,
-	# 			self.instance._meta.get_field('volume').remote_field,            
-	# 			admin_site,
-	# 		)
-	# 	)
+# class Media:
+# 	css = {
+# 	'all': ('/static/admin/css/widgets.css',),
+# 	}
+# 	js = ('/admin/jsi18n',)
 
-	class Meta:
-		model = Chapter
-		fields = ["manga", "volume", "number"]
 
-	# widgets = {
-	# 	"images" : forms.ClearableFileInput(attrs={'multiple': True})
-	# }
+class ChapterQuickForm(ChapterForm):
+    manga = forms.ModelChoiceField(label="Манга", queryset=Manga.objects.all())
 
-	# class Media:
-	# 	css = {
-	# 	'all': ('/static/admin/css/widgets.css',),
-	# 	}
-	# 	js = ('/admin/jsi18n',)
+    class Meta:
+        model = Chapter
+        fields = ["manga", "title", "volume", "number"]
+
+
+class PageForm(forms.ModelForm):
+    class Meta:
+        model = Page
+        fields = ["number", "chapter", "image"]
+
+
+PagesFormSet = inlineformset_factory(Chapter,
+                                     Page,
+                                     form=PageForm,
+                                     extra=1,
+                                     can_delete=False,
+                                     can_delete_extra=False)

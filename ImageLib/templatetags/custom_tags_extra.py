@@ -2,15 +2,16 @@ from django import template
 
 register = template.Library()
 
+
 @register.filter
 def verbose_name(the_object, the_field):
     return the_object._meta.get_field(the_field).verbose_name
+
 
 @register.filter
 def cut_description(description):
     allowable_length = 150
     text = "....."
-    print(not description)
     if not description:
         return text
     elif len(description.split()) < 2:
@@ -25,6 +26,7 @@ def cut_description(description):
         short_description += f" {word}"
     return short_description + text
 
+
 @register.filter
 def get_pages_slice(pages, the_page):
     slice_length_a_b = 2
@@ -35,10 +37,32 @@ def get_pages_slice(pages, the_page):
             elif i - slice_length_a_b < 0:
                 return f":{slice_length_a_b * 2 + 1}"
             else:
-                return f"{i-2}:{i+3}"
+                return f"{i - 2}:{i + 3}"
+
 
 @register.filter
 def get_model_index(query, the_record):
     for i, record in enumerate(query):
         if record.pk == the_record.pk:
-            return i+1
+            return i + 1
+
+
+@register.filter
+def has_attr(obj, attr):
+    return hasattr(obj, attr)
+
+
+@register.filter
+def get(obj, key):
+    # result = obj
+    # for key in keys:
+    #     result = result[key]
+    # return result
+    if type(key) == int:
+        return obj[key-1]
+    return obj[key]
+
+
+@register.filter
+def get_attr(obj, attr):
+    return getattr(obj, attr)
