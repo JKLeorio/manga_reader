@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import inlineformset_factory
-from django.forms.widgets import CheckboxSelectMultiple
+from django.forms.widgets import CheckboxSelectMultiple, ClearableFileInput, FileInput
 from django.contrib.admin import site as admin_site
 from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 
@@ -125,10 +125,18 @@ class ChapterForm(forms.ModelForm):
 
 class ChapterQuickForm(ChapterForm):
     manga = forms.ModelChoiceField(label="Манга", queryset=Manga.objects.all())
+    images = forms.FileField(label="Страницы/Архив")
+
+    def __init__(self, *args, **kwargs):
+        super(ChapterQuickForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            if type(visible.field.widget) in [FileInput, ClearableFileInput]:
+                visible.field.widget.attrs["accept"] = "zip,application/octet-stream,application/zip," \
+                                                       "application/x-zip,application/x-zip-compressed"
 
     class Meta:
         model = Chapter
-        fields = ["manga", "title", "volume", "number"]
+        fields = ["manga", "title", "volume", "number", "images"]
 
 
 class PageForm(forms.ModelForm):

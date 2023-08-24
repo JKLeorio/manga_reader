@@ -6,9 +6,12 @@ from django.views import View
 from django.views.generic import CreateView, ListView, UpdateView, DetailView, DeleteView, FormView
 from django.http import HttpResponseNotFound
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
 
 from .forms import MangaForm, ChapterForm, VolumeForm, PagesFormSet, AuthorForm, PainterForm, ChapterQuickForm
 from .models import Manga, Chapter, Volume, Page, Author, Painter
+
+import zipfile
 
 
 # Create your views here.
@@ -116,6 +119,36 @@ class ChapterDetailView(View):
 # 		return super().form_valid()
 
 
+def validate_and_save_pages_archive(archive, chapter):
+    acceptable_archive_extensions = ['zip']
+    acceptable_images_extensions = ['jpeg', 'png', 'jpg']
+    errors = []
+    archive_members_names = []
+    if not archive.name.split('.')[-1] in acceptable_archive_extensions:
+        raise ValidationError(f'the file must be a [{", ".join(acceptable_archive_extensions)}] archive')
+    with zipfile.ZipFile(archive, mode='r') as opened_archive:
+        for archive_member in opened_archive.infolist():
+            print(archive_member.filename.split('.')[-1], archive_member.is_dir())
+            if archive_member.is_dir() or not archive_member.filename.split('.')[-1] in acceptable_images_extensions:
+                errors.append('archive must contain only images files')
+            elif not archive_member.filename.split('.')[0].isnumeric():
+                errors.append('file name must contain only numbers')
+
+            if archive_member.filename not in archive_members_names:
+                archive_members_names.append(archive_member.filename)
+            else:
+                errors.append('file names must be unique')
+
+            if errors:
+                chapter.delete()
+                raise ValidationError(errors)
+
+            with opened_archive.open(archive_member, mode='r') as content:
+                page = Page(number=int(archive_member.filename.split('.')[0]), chapter=chapter)
+                page.image.save(archive_member.filename, ContentFile(content.read()))
+                page.save()
+
+
 class ChapterInline:
     model = Chapter
     form_class = ChapterQuickForm
@@ -128,19 +161,23 @@ class ChapterInline:
 
         new_form_data = form.data.copy()
         new_form = ChapterForm(data=new_form_data, files=form.files)
-
-        if "manga" in form.data:
+        # if "manga" in form.data:
+        if form.is_valid():
             manga_p = new_form_data.pop("manga")[0]
             new_form.data = new_form_data
             if new_form.is_valid():
                 volume_p = new_form.data["volume"]
                 volume = Volume.objects.filter(pk=volume_p).first()
                 manga = Manga.objects.filter(pk=manga_p, volume=volume).first()
+                if volume and manga:
+                    self.object = new_form.save()
+                else:
+                    raise ValidationError(form.errors)
+                archive = form.files['images']
+                validate_and_save_pages_archive(archive, self.object)
+            else:
+                raise ValidationError(new_form.errors)
 
-        self.object = new_form.save()
-
-        # for every formset, attempt to find a specific formset save function
-        # otherwise, just save.
         for name, formset in named_formsets.items():
             formset_save_func = getattr(self, 'formset_{0}_valid'.format(name), None)
             if formset_save_func is not None:
@@ -150,9 +187,7 @@ class ChapterInline:
         return redirect('manga_list')
 
     def formset_pages_valid(self, formset):
-        pages = formset.save(commit=False)  # self.save_formset(formset, contact)
-        # add this 2 lines, if you have can_delete=True parameter
-        # set in inlineformset_factory func
+        pages = formset.save(commit=False)
         for obj in formset.deleted_objects:
             obj.delete()
         for page in pages:
@@ -172,10 +207,16 @@ class ChapterCreateView(ChapterInline, CreateView, LoginRequiredMixin):
     #     return redirect(reverse(self.success_url))
     # context = {'form': form, 'form2': form2}
     # return render(request, 'projects/project_form.html', context)
+    def get(self, request, *args, **kwargs):
+        self.initial_form_data = kwargs['manga']
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = super(ChapterCreateView, self).get_context_data(**kwargs)
         ctx['named_formsets'] = self.get_named_formsets()
+        if self.initial_form_data:
+            form = self.get_form_class()(initial={"manga": self.initial_form_data})
+            ctx['form'] = form
         return ctx
 
     def get_named_formsets(self):

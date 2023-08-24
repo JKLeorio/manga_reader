@@ -24,7 +24,7 @@
         <img src="{{manga_object.manga_cover.url}}" class="img-fluid rounded-start" alt="...">
           <div class="row cols-2 g-3">
             <div class="col">
-              <a class="btn btn-primary btn-lg" type="button" href="{% url 'chapter_create' %}">Добавить главу</a>
+              <a class="btn btn-primary btn-lg" type="button" href="{% url 'chapter_create_manga_bounded' manga=manga_object.pk %}">Добавить главу</a>
             </div>
             <div class="col">
               <a class="btn btn-primary btn-lg" type="button" href="{% url 'manga_update' pk=manga_object.pk %}">Редактировать мангу</a>
@@ -66,7 +66,7 @@
       <div class="list-group">
         {% for volume in manga_object.volume_set.all%}
           {% for chapter in volume.chapter_set.all%}
-            <a href="{% url 'chapter_detail' m_pk=manga_object.pk volume=volume.number chapter=chapter.number page=chapter.page_set.all.first.number%}" class="list-group-item list-group-item-action">
+            <a href="{% url 'chapter_detail' m_pk=manga_object.pk volume=volume.number chapter=chapter.number page=chapter.page_set.all.first.number %}" class="list-group-item list-group-item-action">
               Том {{ volume.number }} глава {{ chapter.number}} - {{chapter.title}}
             </a>
           {% endfor %}

@@ -110,7 +110,7 @@
             {% endfor %}
             </tbody>
         </table>
-        <a href="#" id="add-page-button" class="btn btn-secondary add-pages">Add More</a>
+        <button type="button" id="add-page-button" class="btn btn-secondary add-pages">Add More</button>
     </div>
     {% endwith %}
 
@@ -130,6 +130,22 @@
           // update form count
           $('#id_pages-TOTAL_FORMS').attr('value', count+1);
       });
+
+      var manga_select = $('#id_manga');
+      var volume_select = $("option[manga_id]").filter(function() {
+        var result = this.getAttribute("manga_id") == manga_select.val();
+        if(result){
+            return result;
+            }
+        else{
+            this.setAttribute("hidden","");
+            return false;
+            };
+        });
+      for(let i=0; i < volume_select.length; i++) {
+        volume_select[i].removeAttribute("hidden");
+      };
+
       $('#id_manga').on('change', function() {
 <!--      var manga_select = $("option:not([manga_id],[selected]) + [value]");-->
 <!--      var manga_select = $("#id_manga > option:not([selected])");-->
@@ -147,6 +163,17 @@
       for(let i=0; i < volume_select.length; i++) {
         volume_select[i].removeAttribute("hidden");
       };
+    });
+    $("input#id_images").on('change', function() {
+    var formset_inputs = $('div.table-responsive.card.mt-4').find('button,input');
+    console.log(formset_inputs);
+    var status = Boolean($(this).val());
+    console.log(status);
+    console.log(formset_inputs.length);
+    for(let i=0; i < formset_inputs.length; i++) {
+        console.log(formset_inputs[i]);
+        $(formset_inputs[i]).prop('disabled', status);
+    };
     });
     });
 </script>
