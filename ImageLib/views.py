@@ -8,6 +8,7 @@ from django.http import HttpResponseNotFound
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 
+from .filters import MangaFilter
 from .forms import MangaForm, ChapterForm, VolumeForm, PagesFormSet, AuthorForm, PainterForm, ChapterQuickForm
 from .models import Manga, Chapter, Volume, Page, Author, Painter
 
@@ -27,6 +28,14 @@ class MangaListView(ListView):
     template_name = 'manga_list.html'
     model = Manga
     context_object_name = 'manga_objects'
+
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        filter_ob = MangaFilter(request.GET, queryset=Manga.objects.all())
+        response.context_data['filter'] = filter_ob
+        if request.GET:
+            response.context_data[self.context_object_name] = filter_ob.qs
+        return response
 
 
 class MangaDetailView(DetailView):

@@ -1,10 +1,33 @@
 {% extends 'base.html' %}
-{% block content %}
 
 {% load custom_tags_extra %}
 
+{% block content %}
 
 <div class="container">
+  <h1></h1>
+  <div class="row row-cols-4">
+  <div class="col">
+      <select class="form-select" onchange="location = this.value;">
+          <option selected hidden="">Cортировать</option>
+          <option value="/">По дате загрузки</option>
+      </select>
+  </div>
+  <div class="col">
+    <div class="dropdown" id="ListDropDown">
+      <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+        Фильтры
+      </button>
+      <div class="dropdown-menu">
+      <form class="px-4 py-3">
+        {{filter.form.as_p}}
+        <input type="submit" value="Найти">
+      </form>
+      </div>
+    </div>
+  </div>
+</div>
+  <h1></h1>
   <div class="row row-cols-5 g-5">
     {% for manga_object in manga_objects%}
     <div class="col">
@@ -44,6 +67,9 @@
 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
 var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
   return new bootstrap.Tooltip(tooltipTriggerEl)
+})
+$('#ListDropDown').click(function(e){
+    e.stopPropagation();
 })
 </script>
 {% endblock%}
