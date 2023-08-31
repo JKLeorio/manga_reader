@@ -59,10 +59,26 @@ def get(obj, key):
     #     result = result[key]
     # return result
     if type(key) == int:
-        return obj[key-1]
+        return obj[key - 1]
     return obj[key]
+
+
+@register.filter
+def get_item(obj, key):
+    return obj.get(key, None)
 
 
 @register.filter
 def get_attr(obj, attr):
     return getattr(obj, attr)
+
+
+@register.simple_tag()
+def set_get_parameter(request, parameter, value):
+    new_path = request.path_info + '?'
+    new_request_get = request.GET.copy()
+    new_request_get.update({parameter: value})
+    for get_parameter, parameter_value in new_request_get.items():
+        new_path += f'{get_parameter}={parameter_value}&'
+    new_path = new_path[:-1]
+    return new_path

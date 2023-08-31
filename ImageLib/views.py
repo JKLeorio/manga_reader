@@ -7,7 +7,7 @@ from django.views.generic import CreateView, ListView, UpdateView, DetailView, D
 from django.http import HttpResponseNotFound
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
-
+from django.http import HttpRequest
 from .filters import MangaFilter
 from .forms import MangaForm, ChapterForm, VolumeForm, PagesFormSet, AuthorForm, PainterForm, ChapterQuickForm
 from .models import Manga, Chapter, Volume, Page, Author, Painter
@@ -28,13 +28,24 @@ class MangaListView(ListView):
     template_name = 'manga_list.html'
     model = Manga
     context_object_name = 'manga_objects'
+    filter_order = {"by_date_descending": "-release_year",
+                    'by_date_ascending': "release_year",
+                    "by_popularity": {}}
+
+    filter_order_options = {"by_date_descending": "По убыванию даты создания",
+                            "by_date_ascending": "По возрастанию даты создания",
+                            "by_popularity": "По популярности"}
 
     def get(self, request, *args, **kwargs):
         response = super().get(request, *args, **kwargs)
+        filter_action = None
+        if 'order_by' in request.GET:
+            filter_action = (self.filter_order[request.GET.get('order_by')])
         filter_ob = MangaFilter(request.GET, queryset=Manga.objects.all())
+        if filter_action:
+            filter_ob.qs.order_by(filter_action)
         response.context_data['filter'] = filter_ob
-        if request.GET:
-            response.context_data[self.context_object_name] = filter_ob.qs
+        response.context_data[self.context_object_name] = filter_ob.qs
         return response
 
 

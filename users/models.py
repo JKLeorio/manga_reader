@@ -1,6 +1,10 @@
 import uuid
 import os
 
+import sys
+
+sys.path.append('..')
+
 from django.db import models
 from django.contrib.auth.models import (
     AbstractBaseUser,
@@ -9,6 +13,9 @@ from django.contrib.auth.models import (
 )
 from django.utils import timezone
 from django.dispatch import receiver
+from django.contrib.auth import get_user_model
+
+from ImageLib.models import Manga, Page
 
 
 class UserManager(BaseUserManager):
@@ -90,3 +97,38 @@ def auto_delete_file_on_change(sender, instance, **kwargs):
         models.signals.pre_save.disconnect(auto_delete_file_on_change, sender=sender)
         old_file.delete()
         models.signals.pre_save.connect(auto_delete_file_on_change, sender=sender)
+
+
+class ProfileMangaLibraryItem(models.Model):
+    status_states = [(1, 'featured_manga'),
+                     (2, 'closed_manga'),
+                     (3, 'read_manga'),
+                     (4, 'abandoned_manga'),
+                     (5, 'planned_manga')]
+
+    owner = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, verbose_name='Владелец')
+    status = models.CharField(max_length=255, choices=status_states, verbose_name='Статус')
+    manga = models.ManyToManyField(Manga, verbose_name='Избранная манга')
+
+
+# class Profile(models.Model):
+#     owner = models.OneToOneField(get_user_model(), on_delete=models.CASCADE, verbose_name='Владелец')
+
+
+class Comment(models.Model):
+    comment = models.CharField(max_length=777, verbose_name='Комментарий')
+    owner = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, verbose_name='Автор комментария')
+    date_of_creation = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
+    likes = models.PositiveIntegerField(default=0, verbose_name='Количество согласных')
+    dislikes = models.PositiveIntegerField(default=0, verbose_name='Количество не согласных')
+
+    class Meta:
+        abstract = True
+
+
+class PageComment(Comment):
+    page = models.ForeignKey(Page, on_delete=models.CASCADE, verbose_name='манга')
+
+
+class MangaComment(Comment):
+    manga = models.ForeignKey(Manga, on_delete=models.CASCADE, verbose_name='манга')

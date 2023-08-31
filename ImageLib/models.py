@@ -82,6 +82,18 @@ class Painter(models.Model):
 #     verbose_name = 'Переводчик'
 #     verbose_name_plural = "Переводчики"
 
+
+class Genre(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return f"{self.name}"
+
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = "Жанры"
+
+
 class Manga(models.Model):
     name = models.CharField(max_length=255, verbose_name="Название")
     description = models.TextField(max_length=5000, verbose_name="Описание")
@@ -92,7 +104,7 @@ class Manga(models.Model):
     painter = models.ForeignKey(Painter, on_delete=models.CASCADE, verbose_name="Художник")
     release_format = models.ManyToManyField(ReleaseFormat, verbose_name="Формат выпуска")
     manga_cover = models.ImageField(upload_to=Manga_cover_directory_path, verbose_name="Обложка манги")
-
+    genres = models.ManyToManyField(Genre, verbose_name="Жанры")
     def __str__(self):
         return f"{self.name}"
 

@@ -38,7 +38,8 @@ from .models import Manga, Chapter, Volume, Page, Painter, Author
 class MangaForm(forms.ModelForm):
     class Meta:
         model = Manga
-        fields = ["name", "description", "release_year", "status", "author", "painter", "release_format", "manga_cover"]
+        fields = ["name", "description", "release_year", "status", "author",
+                  "painter", "genres", "release_format", "manga_cover"]
 
         widgets = {
             # 'manga_cover': forms.ClearableFileInput(attrs={'multiple': True}),

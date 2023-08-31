@@ -9,8 +9,21 @@
   <div class="row row-cols-4">
   <div class="col">
       <select class="form-select" onchange="location = this.value;">
+        {% if view.request.GET|get_item:'order_by' in view.filter_order %}
+          {% with request_option_value=view.request.GET|get_item:'order_by' %}
+            <option selected hidden="">{{view.filter_order_options|get_item:request_option_value}}</option>
+            {% for value, option in view.filter_order_options.items %}
+              {% if value != request_option_value %}
+                <option value="{% set_get_parameter request 'order_by' value %}">{{option}}</option>
+              {% endif %}
+            {% endfor %}
+          {% endwith %}
+        {% else %}
           <option selected hidden="">Cортировать</option>
-          <option value="/">По дате загрузки</option>
+          {% for value, option in view.filter_order_options.items %}
+            <option value="{% set_get_parameter request 'order_by' value %}">{{option}}</option>
+          {% endfor %}
+        {% endif %}
       </select>
   </div>
   <div class="col">
