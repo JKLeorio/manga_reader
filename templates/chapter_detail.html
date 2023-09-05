@@ -11,25 +11,8 @@
 </style>
 <div class="container">
     <h1 class="mt-3"></h1>
-<!-- 	<nav aria-label="Page navigation example">
-	  <ul class="pagination">
-	  	{% with new_var=page_objects|get_pages_slice:page_object %}
-		    {% for page in page_objects|slice:new_var %}
-				{% if page.number == page_object.number%}
-				    <li class="page-item active" aria-current="page">
-				      <a class="page-link" href="/manga/{{manga_object.pk}}/volume/{{volume_object.number}}/chapter/{{chapter_object.number}}/page/{{page.number}}/">{{page.number}}</a></li>
-				    </li>
-				{% else %}
-					<li class="page-item">
-						<a class="page-link" href="/manga/{{manga_object.pk}}/volume/{{volume_object.number}}/chapter/{{chapter_object.number}}/page/{{page.number}}/">{{page.number}}</a>
-					</li>
-				{% endif %}
-		    {% endfor %}
-		{% endwith %}
-	  </ul>
-	</nav> -->
 	<div class="row justify-content-md-center">
-		<div class="col-5">
+		<div class="col">
 			<div class="dropdown">
 			  <a class="btn btn-primary btn-lg dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
 			    Страницы
@@ -38,27 +21,90 @@
 			  	<div class="overflow-auto" style="max-width: 150px; max-height: 300px;">
 			  		{% for page in page_objects%}
 			  		<li>
-				      <a class="dropdown-item" href="#" image_url="{{page.image.url}}" position="{{forloop.counter}}" page="{{page.number}}">{{page.number}}</a></li>
-				    </li>
-<!-- 						{% if page.number == page_object.number%}
-						    <li>
-						      <a class="dropdown-item active" href="/manga/{{manga_object.pk}}/volume/{{volume_object.number}}/chapter/{{chapter_object.number}}/page/{{page.number}}/">{{page.number}}</a></li>
-						    </li>
-						{% else %}
-							<li>
-								<a class="dropdown-item" href="/manga/{{manga_object.pk}}/volume/{{volume_object.number}}/chapter/{{chapter_object.number}}/page/{{page.number}}/">{{page.number}}</a>
-							</li>
-						{% endif %} -->
+				      <a class="dropdown-item" href="#" image_url="{{page.image.url}}" position="{{forloop.counter}}" page="{{page.number}}">{{page.number}}</a>
+					</li>
 					{% endfor %}
 				</div>
 			  </ul>
 			</div>
 		</div>
-		<div class="col-5">
+		<div class="col">
+			<button type="button" id="pageN" class="btn btn-primary btn-lg" disabled>Страница {{page_object.number}}</button>
+		</div>
+		<div class="col">
 			<a href="{% url 'manga_detail' manga_object.pk %}" class="btn btn-primary btn-lg">{{manga_object.name}}</a>
 		</div>
 		<div class="col">
-			<button type="button" id="pageN" class="btn btn-primary btn-lg" disabled>Страница {{page_object.number}}</button>
+			<div class="btn-group" role="group">
+			{% with page=page_objects.first %}
+				{% with current_chapter=page.chapter current_volume=page.chapter.volume manga=page.chapter.volume.manga last_chapter=page.chapter.volume.chapter_set.all.last first_chapter=page.chapter.volume.chapter_set.all.first %}
+					{% if current_chapter == first_chapter%}
+						{% with next_volume_chapter=current_volume.get_prev_volume_chapter %}
+						{% if next_volume_chapters %}
+						{% with next_chapter=next_volume_chapter|get_item:'chapter'%}
+						{% with next_chapter|get_first_page_by_chapter:'page_set' as next_page %}
+							<a href="{% url 'chapter_detail' m_pk=manga.pk volume=next_volume_chapter|get_item:'volume_number' chapter=next_volume_chapter|get_item:'chapter_number' page=next_page.number %}" type="button" class="btn btn-primary btn-lg" aria-label="Next">
+								<span aria-hidden="true">&laquo;</span>
+							</a>
+						{% endwith %}
+						{% endwith %}
+						{% else %}
+							<a href="#" type="button" class="btn btn-primary btn-lg disabled" tabindex="-1" aria-label="Next" aria-disabled="true">
+								<span aria-hidden="true">&laquo;</span>
+							</a>
+						{% endif%}
+						{% endwith %}
+					{% else %}
+						{% with next_chapter=current_chapter.get_prev_chapter %}
+							{% with next_chapter|get_first_page_by_chapter:'page_set' as next_page %}
+								<a href="{% url 'chapter_detail' m_pk=manga.pk volume=current_volume.number chapter=next_chapter.number page=next_page.number%}" type="button" class="btn btn-primary btn-lg" aria-label="Next">
+									<span aria-hidden="true">&laquo;</span>
+								</a>
+							{% endwith %}
+						{% endwith %}
+					{% endif %}
+
+					<button type="button" class="btn btn-primary dropdown-toggle btn-lg" data-bs-toggle="dropdown" aria-expanded="false">Middle</button>
+					<ul class="dropdown-menu">
+						<div class="overflow-auto" style="max-width: 180px; max-height: 300px;">
+							{% for volume in manga.volume_set.all %}
+								{% for chapter in volume.chapter_set.all %}
+									{% with chapter|get_first_page_by_chapter:'page_set' as next_page %}
+										<li><a class="dropdown-item" href="{% url 'chapter_detail' m_pk=manga.pk volume=volume.number chapter=chapter.number page=next_page.number %}">Том {{volume.number}} Глава {{ chapter.number }}</a></li>
+									{% endwith %}
+								{% endfor %}
+							{% endfor %}
+						</div>
+					</ul>
+
+					{% if current_chapter == last_chapter %}
+						{% with next_volume_chapter=current_volume.get_next_volume_chapter %}
+							{% if next_volume_chapters %}
+							{% with next_chapter=next_volume_chapter|get_item:'chapter'%}
+							{% with next_chapter|get_first_page_by_chapter:'page_set' as next_page %}
+							<a href="{% url 'chapter_detail' m_pk=manga.pk volume=next_volume_chapter|get_item:'volume_number' chapter=next_volume_chapter|get_item:'chapter_number' page=next_page.number %}" type="button" class="btn btn-primary btn-lg" aria-label="Next">
+								<span aria-hidden="true">&raquo;</span>
+							</a>
+							{% endwith %}
+							{% endwith %}
+							{% else %}
+							<a href="#" type="button" class="btn btn-primary btn-lg disabled" tabindex="-1" aria-label="Next" aria-disabled="true">
+								<span aria-hidden="true">&raquo;</span>
+							</a>
+							{% endif%}
+						{% endwith %}
+					{% else %}
+						{% with next_chapter=current_chapter.get_next_chapter %}
+							{% with next_chapter|get_first_page_by_chapter:'page_set' as next_page %}
+								<a href="{% url 'chapter_detail' m_pk=manga.pk volume=current_volume.number chapter=next_chapter.number page=next_page.number %}" type="button" class="btn btn-primary btn-lg" aria-label="Next">
+									<span aria-hidden="true">&raquo;</span>
+								</a>
+							{% endwith %}
+						{% endwith %}
+					{% endif %}
+				{% endwith %}
+			{% endwith %}
+			</div>
 		</div>
 	</div>
 
@@ -69,17 +115,17 @@
 	</a> -->
 	<div id="carouselExampleControls" class="carousel slide">
 	  <div class="carousel-inner">
-	  	<div class="container" id="images_block" style="width:100%; height:100%;">
+	  	<div class="container" id="images_block" style="width:100%; min-height:100%;">
 			<img src="{{page_object.image.url}}" class="img-fluid" alt="..." style="display: block;margin-left: auto;margin-right: auto" position="{{page_objects|get_model_index:page_object}}">
 		</div>
 	  </div>
 	  <button class="carousel-control-prev" type="button" arg="prev">
-	    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-	    <span class="visually-hidden">Previous</span>
+<!--	    <span class="carousel-control-prev-icon" aria-hidden="true"></span>-->
+<!--	    <span class="visually-hidden">Previous</span>-->
 	  </button>
 	  <button class="carousel-control-next" type="button" arg="next">
-	    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-	    <span class="visually-hidden">Next</span>
+<!--	    <span class="carousel-control-next-icon" aria-hidden="true"></span>-->
+<!--	    <span class="visually-hidden">Next</span>-->
 	  </button>
 	</div>
 </div>

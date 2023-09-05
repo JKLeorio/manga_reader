@@ -73,7 +73,7 @@ def get_attr(obj, attr):
     return getattr(obj, attr)
 
 
-@register.simple_tag()
+@register.simple_tag
 def set_get_parameter(request, parameter, value):
     new_path = request.path_info + '?'
     new_request_get = request.GET.copy()
@@ -82,3 +82,24 @@ def set_get_parameter(request, parameter, value):
         new_path += f'{get_parameter}={parameter_value}&'
     new_path = new_path[:-1]
     return new_path
+
+
+@register.filter()
+def get_first_page_by_chapter(model_object, method_name):
+    if model_object:
+        if hasattr(model_object, method_name):
+            final_query = getattr(model_object, method_name).all().order_by('number').first()
+            if final_query:
+                return final_query
+    return None
+
+
+@register.filter()
+def get_first_page_by_chapters(queryset, method_name):
+    if queryset:
+        first_item = queryset.first()
+        if hasattr(first_item, method_name):
+            final_query = getattr(first_item, method_name).all().order_by('number').first()
+            if final_query:
+                return final_query
+    return None

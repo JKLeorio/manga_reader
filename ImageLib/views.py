@@ -193,8 +193,9 @@ class ChapterInline:
                     self.object = new_form.save()
                 else:
                     raise ValidationError(form.errors)
-                archive = form.files['images']
-                validate_and_save_pages_archive(archive, self.object)
+                archive = form.files.get('images', None)
+                if archive:
+                    validate_and_save_pages_archive(archive, self.object)
             else:
                 raise ValidationError(new_form.errors)
 

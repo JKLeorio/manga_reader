@@ -126,7 +126,7 @@ class ChapterForm(forms.ModelForm):
 
 class ChapterQuickForm(ChapterForm):
     manga = forms.ModelChoiceField(label="Манга", queryset=Manga.objects.all())
-    images = forms.FileField(label="Страницы/Архив")
+    images = forms.FileField(label="Страницы/Архив", required=False)
 
     def __init__(self, *args, **kwargs):
         super(ChapterQuickForm, self).__init__(*args, **kwargs)

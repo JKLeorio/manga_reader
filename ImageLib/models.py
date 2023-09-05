@@ -105,6 +105,7 @@ class Manga(models.Model):
     release_format = models.ManyToManyField(ReleaseFormat, verbose_name="Формат выпуска")
     manga_cover = models.ImageField(upload_to=Manga_cover_directory_path, verbose_name="Обложка манги")
     genres = models.ManyToManyField(Genre, verbose_name="Жанры")
+
     def __str__(self):
         return f"{self.name}"
 
@@ -123,6 +124,36 @@ class Volume(models.Model):
     def __str__(self):
         return f"{self.number}"
 
+    def get_next_volume_chapter(self):
+        queryset = Volume.objects.filter(number__gt=self.number).order_by("number").first()
+        if queryset:
+            chapter = queryset.chapter_set.all().order_by("number").first()
+            if chapter:
+                return {
+                        'volume': queryset,
+                        'chapters': chapter,
+                        'volume_number': queryset.number,
+                        'chapter_number': chapter.number
+                        }
+            else:
+                return None
+        return None
+
+    def get_prev_volume_chapter(self):
+        queryset = Volume.objects.filter(number__lt=self.number).order_by("number").last()
+        if queryset:
+            chapter = queryset.chapter_set.all().order_by("number").last()
+            if chapter:
+                return {
+                        'volume': queryset,
+                        'chapters': chapter,
+                        'volume_number': queryset.number,
+                        'chapter_number': chapter.number
+                        }
+            else:
+                return None
+        return None
+
     class Meta:
         verbose_name = 'Том'
         verbose_name_plural = "Тома"
@@ -137,6 +168,12 @@ class Chapter(models.Model):
 
     def __str__(self):
         return f"{self.number}"
+
+    def get_next_chapter(self):
+        return Chapter.objects.filter(number__gt=self.number).order_by("number").first()
+
+    def get_prev_chapter(self):
+        return Chapter.objects.filter(number__lt=self.number).order_by("number").last()
 
     class Meta:
         verbose_name = 'Глава'
