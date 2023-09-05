@@ -35,6 +35,9 @@
 			<a href="{% url 'manga_detail' manga_object.pk %}" class="btn btn-primary btn-lg">{{manga_object.name}}</a>
 		</div>
 		<div class="col">
+			<button type="button" class="btn btn-primary btn-lg" disabled>Том {{page_object.chapter.volume.number}} Глава {{page_object.chapter.number}}</button>
+		</div>
+		<div class="col">
 			<div class="btn-group" role="group">
 			{% with page=page_objects.first %}
 				{% with current_chapter=page.chapter current_volume=page.chapter.volume manga=page.chapter.volume.manga last_chapter=page.chapter.volume.chapter_set.all.last first_chapter=page.chapter.volume.chapter_set.all.first %}
@@ -64,7 +67,7 @@
 						{% endwith %}
 					{% endif %}
 
-					<button type="button" class="btn btn-primary dropdown-toggle btn-lg" data-bs-toggle="dropdown" aria-expanded="false">Middle</button>
+					<button type="button" class="btn btn-primary dropdown-toggle btn-lg" data-bs-toggle="dropdown" aria-expanded="false">Главы</button>
 					<ul class="dropdown-menu">
 						<div class="overflow-auto" style="max-width: 180px; max-height: 300px;">
 							{% for volume in manga.volume_set.all %}
