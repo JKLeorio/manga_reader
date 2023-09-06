@@ -106,6 +106,9 @@ class Manga(models.Model):
     manga_cover = models.ImageField(upload_to=Manga_cover_directory_path, verbose_name="Обложка манги")
     genres = models.ManyToManyField(Genre, verbose_name="Жанры")
 
+    def get_ordered_related_volumes(self):
+        return self.volume_set.all().order_by("number")
+
     def __str__(self):
         return f"{self.name}"
 
@@ -124,34 +127,52 @@ class Volume(models.Model):
     def __str__(self):
         return f"{self.number}"
 
+    def get_ordered_volumes(self):
+        return Volume.objects.all().order_by("number")
+
+    def get_ordered_related_chapters(self):
+        return self.chapter_set.all().order_by("number")
+
     def get_next_volume_chapter(self):
-        queryset = Volume.objects.filter(number__gt=self.number).order_by("number").first()
-        if queryset:
-            chapter = queryset.chapter_set.all().order_by("number").first()
-            if chapter:
-                return {
-                        'volume': queryset,
-                        'chapters': chapter,
-                        'volume_number': queryset.number,
-                        'chapter_number': chapter.number
-                        }
-            else:
+        volume = Volume.objects.filter(number__gt=self.number, manga=self.manga).order_by("number").first()
+        chapter = None
+        if volume:
+            chapter = volume.chapter_set.all().order_by("number").first()
+        else:
+            volume = Volume.objects.filter(manga=self.manga).order_by('number').last()
+            if volume.pk == self.pk:
+                # chapter = volume.chapter_set.all().order_by("number").first()
                 return None
+
+        if chapter:
+            return {
+                'volume': volume,
+                'chapter': chapter,
+                'volume_number': volume.number,
+                'chapter_number': chapter.number
+            }
+
         return None
 
     def get_prev_volume_chapter(self):
-        queryset = Volume.objects.filter(number__lt=self.number).order_by("number").last()
-        if queryset:
-            chapter = queryset.chapter_set.all().order_by("number").last()
-            if chapter:
-                return {
-                        'volume': queryset,
-                        'chapters': chapter,
-                        'volume_number': queryset.number,
-                        'chapter_number': chapter.number
-                        }
-            else:
+        volume = Volume.objects.filter(number__lt=self.number, manga=self.manga).order_by("number").last()
+        chapter = None
+        if volume:
+            chapter = volume.chapter_set.all().order_by("number").last()
+        else:
+            volume = Volume.objects.filter(manga=self.manga).order_by('number').first()
+            if volume.pk == self.pk:
+                # chapter = volume.chapter_set.all().order_by("number").last()
                 return None
+
+        if chapter:
+            return {
+                'volume': volume,
+                'chapter': chapter,
+                'volume_number': volume.number,
+                'chapter_number': chapter.number
+            }
+
         return None
 
     class Meta:
@@ -170,10 +191,17 @@ class Chapter(models.Model):
         return f"{self.number}"
 
     def get_next_chapter(self):
-        return Chapter.objects.filter(number__gt=self.number).order_by("number").first()
+        queryset = Chapter.objects.filter(number__gt=self.number, volume=self.volume).order_by("number").first()
+        return queryset
 
     def get_prev_chapter(self):
-        return Chapter.objects.filter(number__lt=self.number).order_by("number").last()
+        queryset =  Chapter.objects.filter(number__lt=self.number, volume=self.volume).order_by("number").last()
+        return queryset
+    def get_ordered_chapters(self):
+        return Volume.objects.all().order_by("number")
+
+    def get_ordered_related_pages(self):
+        return self.page_set.all().order_by("number")
 
     class Meta:
         verbose_name = 'Глава'

@@ -40,17 +40,17 @@
 		<div class="col">
 			<div class="btn-group" role="group">
 			{% with page=page_objects.first %}
-				{% with current_chapter=page.chapter current_volume=page.chapter.volume manga=page.chapter.volume.manga last_chapter=page.chapter.volume.chapter_set.all.last first_chapter=page.chapter.volume.chapter_set.all.first %}
+				{% with current_chapter=page.chapter current_volume=page.chapter.volume manga=page.chapter.volume.manga last_chapter=page.chapter.volume.get_ordered_related_chapters.last first_chapter=page.chapter.volume.get_ordered_related_chapters.first %}
 					{% if current_chapter == first_chapter%}
 						{% with next_volume_chapter=current_volume.get_prev_volume_chapter %}
-						{% if next_volume_chapters %}
-						{% with next_chapter=next_volume_chapter|get_item:'chapter'%}
-						{% with next_chapter|get_first_page_by_chapter:'page_set' as next_page %}
-							<a href="{% url 'chapter_detail' m_pk=manga.pk volume=next_volume_chapter|get_item:'volume_number' chapter=next_volume_chapter|get_item:'chapter_number' page=next_page.number %}" type="button" class="btn btn-primary btn-lg" aria-label="Next">
-								<span aria-hidden="true">&laquo;</span>
-							</a>
-						{% endwith %}
-						{% endwith %}
+						{% if next_volume_chapter %}
+							{% with next_chapter=next_volume_chapter|get_item:'chapter'%}
+								{% with next_chapter|get_first_page_by_chapter:'page_set' as next_page %}
+									<a href="{% url 'chapter_detail' m_pk=manga.pk volume=next_volume_chapter|get_item:'volume_number' chapter=next_volume_chapter|get_item:'chapter_number' page=next_page.number %}" type="button" class="btn btn-primary btn-lg" aria-label="Next">
+										<span aria-hidden="true">&laquo;</span>
+									</a>
+								{% endwith %}
+							{% endwith %}
 						{% else %}
 							<a href="#" type="button" class="btn btn-primary btn-lg disabled" tabindex="-1" aria-label="Next" aria-disabled="true">
 								<span aria-hidden="true">&laquo;</span>
@@ -70,8 +70,8 @@
 					<button type="button" class="btn btn-primary dropdown-toggle btn-lg" data-bs-toggle="dropdown" aria-expanded="false">Главы</button>
 					<ul class="dropdown-menu">
 						<div class="overflow-auto" style="max-width: 180px; max-height: 300px;">
-							{% for volume in manga.volume_set.all %}
-								{% for chapter in volume.chapter_set.all %}
+							{% for volume in manga.get_ordered_related_volumes %}
+								{% for chapter in volume.get_ordered_related_chapters %}
 									{% with chapter|get_first_page_by_chapter:'page_set' as next_page %}
 										<li><a class="dropdown-item" href="{% url 'chapter_detail' m_pk=manga.pk volume=volume.number chapter=chapter.number page=next_page.number %}">Том {{volume.number}} Глава {{ chapter.number }}</a></li>
 									{% endwith %}
@@ -82,18 +82,18 @@
 
 					{% if current_chapter == last_chapter %}
 						{% with next_volume_chapter=current_volume.get_next_volume_chapter %}
-							{% if next_volume_chapters %}
-							{% with next_chapter=next_volume_chapter|get_item:'chapter'%}
-							{% with next_chapter|get_first_page_by_chapter:'page_set' as next_page %}
-							<a href="{% url 'chapter_detail' m_pk=manga.pk volume=next_volume_chapter|get_item:'volume_number' chapter=next_volume_chapter|get_item:'chapter_number' page=next_page.number %}" type="button" class="btn btn-primary btn-lg" aria-label="Next">
-								<span aria-hidden="true">&raquo;</span>
-							</a>
-							{% endwith %}
-							{% endwith %}
+							{% if next_volume_chapter %}
+								{% with next_chapter=next_volume_chapter|get_item:'chapter'%}
+									{% with next_chapter|get_first_page_by_chapter:'page_set' as next_page %}
+									<a href="{% url 'chapter_detail' m_pk=manga.pk volume=next_volume_chapter|get_item:'volume_number' chapter=next_volume_chapter|get_item:'chapter_number' page=next_page.number %}" type="button" class="btn btn-primary btn-lg" aria-label="Next">
+										<span aria-hidden="true">&raquo;</span>
+									</a>
+									{% endwith %}
+								{% endwith %}
 							{% else %}
-							<a href="#" type="button" class="btn btn-primary btn-lg disabled" tabindex="-1" aria-label="Next" aria-disabled="true">
-								<span aria-hidden="true">&raquo;</span>
-							</a>
+								<a href="#" type="button" class="btn btn-primary btn-lg disabled" tabindex="-1" aria-label="Next" aria-disabled="true">
+									<span aria-hidden="true">&raquo;</span>
+								</a>
 							{% endif%}
 						{% endwith %}
 					{% else %}

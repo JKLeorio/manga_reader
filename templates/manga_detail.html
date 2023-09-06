@@ -48,13 +48,13 @@
         </small></p>
 
         <div class="d-grid gap-2">
-          {% with volume=manga_object.volume_set.all %}
-            {% with first_volume=volume.first first_chapter=volume.first.chapter_set.all.first %}
+          {% with volume=manga_object.get_ordered_related_volumes %}
+            {% with first_volume=volume.first first_chapter=volume.first.get_ordered_related_chapters.first %}
               {% if first_volume and first_chapter %}
                 <a href="{% url 'chapter_detail' m_pk=manga_object.pk volume=1 chapter=1 page=1%}" class="btn btn-info" type="button"><h4>Начать читать с первой главы</h4></a>
               {% endif %}
             {% endwith %}
-            {% with last_volume=volume.last last_chapter=volume.last.chapter_set.all.last %}
+            {% with last_volume=volume.last last_chapter=volume.last.get_ordered_related_chapters.last %}
               {% if last_volume and last_chapter %}
                 <a href="{% url 'chapter_detail' m_pk=manga_object.pk volume=last_volume.number chapter=last_chapter.number page=1%}" class="btn btn-warning" type="button"><h4>Начать читать с последней главы</h4></a>
               {% endif %}
@@ -70,9 +70,9 @@
 
     <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
       <div class="list-group">
-        {% for volume in manga_object.volume_set.all%}
-          {% for chapter in volume.chapter_set.all%}
-            <a href="{% url 'chapter_detail' m_pk=manga_object.pk volume=volume.number chapter=chapter.number page=chapter.page_set.all.first.number %}" class="list-group-item list-group-item-action">
+        {% for volume in manga_object.get_ordered_related_volumes %}
+          {% for chapter in volume.get_ordered_related_chapters %}
+            <a href="{% url 'chapter_detail' m_pk=manga_object.pk volume=volume.number chapter=chapter.number page=chapter.get_ordered_related_pages.first.number %}" class="list-group-item list-group-item-action">
               Том {{ volume.number }} Глава {{ chapter.number}} - {{chapter.title}}
             </a>
           {% endfor %}
