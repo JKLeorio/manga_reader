@@ -1,5 +1,4 @@
 from django.db import models
-from django.conf import settings
 import datetime
 
 YEAR_CHOICES = [(r, r) for r in range(1945, datetime.date.today().year + 1)]

@@ -1,13 +1,21 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
+
 {% load crispy_forms_tags %}
 
+
 {% block content %}
-<div class="container">
-  <h1 class="mt-3">Автор</h1>
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form | crispy }}
-    <button type="submit" class="btn btn-primary">Создать</button>
-  </form>
-</div>
+    <div class="container">
+        <div class="d-flex w-100 justify-content-center py-4">
+            <div class="card card-body shadow-sm" style="max-width: 500px">
+                <h3>Добавить автора</h3>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+
+                    <button type="submit" class="btn btn-dark">Сохранить</button>
+                </form>
+            </div>
+        </div>
+    </div>
 {% endblock %}

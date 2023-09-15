@@ -1,6 +1,5 @@
 import django_filters
 from django_filters import FilterSet
-from django.db import models
 from django import forms
 from .models import Manga, ReleaseFormat
 

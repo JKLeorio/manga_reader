@@ -1,8 +1,6 @@
 from django import forms
 from django.forms import inlineformset_factory
 from django.forms.widgets import CheckboxSelectMultiple, ClearableFileInput, FileInput
-from django.contrib.admin import site as admin_site
-from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
 
 # from django.urls import reverse
 # from django.utils.safestring import mark_safe

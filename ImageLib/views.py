@@ -3,11 +3,10 @@ from django.shortcuts import render, reverse, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
-from django.views.generic import CreateView, ListView, UpdateView, DetailView, DeleteView, FormView
+from django.views.generic import CreateView, ListView, UpdateView, DetailView, DeleteView
 from django.http import HttpResponseNotFound
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
-from django.http import HttpRequest
 from .filters import MangaFilter
 from .forms import MangaForm, ChapterForm, VolumeForm, PagesFormSet, AuthorForm, PainterForm, ChapterQuickForm
 from .models import Manga, Chapter, Volume, Page, Author, Painter
@@ -19,13 +18,13 @@ import zipfile
 
 
 class MangaCreateView(CreateView, LoginRequiredMixin):
-    template_name = 'manga_create.html'
+    template_name = 'manga/manga_create.html'
     form_class = MangaForm
     success_url = reverse_lazy('manga_list')
 
 
 class MangaListView(ListView):
-    template_name = 'manga_list.html'
+    template_name = 'manga/manga_list.html'
     model = Manga
     context_object_name = 'manga_objects'
     filter_order = {"by_date_descending": "-release_year",
@@ -51,14 +50,14 @@ class MangaListView(ListView):
 
 class MangaDetailView(DetailView):
     model = Manga
-    template_name = "manga_detail.html"
+    template_name = "manga/manga_detail.html"
     context_object_name = "manga_object"
 
 
 class MangaUpdateView(LoginRequiredMixin, UpdateView):
     model = Manga
     form_class = MangaForm
-    template_name = "manga_update.html"
+    template_name = "manga/manga_update.html"
 
     def get_success_url(self):
         pk = self.kwargs["pk"]
@@ -144,12 +143,12 @@ def validate_and_save_pages_archive(archive, chapter):
     acceptable_images_extensions = ['jpeg', 'png', 'jpg']
     errors = []
     archive_members_names = []
-    if not archive.name.split('.')[-1] in acceptable_archive_extensions:
+    if archive.name.split('.')[-1] not in acceptable_archive_extensions:
         raise ValidationError(f'the file must be a [{", ".join(acceptable_archive_extensions)}] archive')
     with zipfile.ZipFile(archive, mode='r') as opened_archive:
         for archive_member in opened_archive.infolist():
             print(archive_member.filename.split('.')[-1], archive_member.is_dir())
-            if archive_member.is_dir() or not archive_member.filename.split('.')[-1] in acceptable_images_extensions:
+            if archive_member.is_dir() or archive_member.filename.split('.')[-1] not in acceptable_images_extensions:
                 errors.append('archive must contain only images files')
             elif not archive_member.filename.split('.')[0].isnumeric():
                 errors.append('file name must contain only numbers')
