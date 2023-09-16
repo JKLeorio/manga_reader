@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.shortcuts import render, reverse, redirect
+from django.shortcuts import render, reverse, redirect, get_object_or_404, get_list_or_404
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
@@ -51,19 +51,13 @@ class MangaUpdateView(LoginRequiredMixin, UpdateView):
     template_name = "manga/manga_update.html"
 
     def get_success_url(self):
-        pk = self.kwargs["pk"]
-        return reverse("manga_update", kwargs={"pk": pk})
+        return reverse("manga_detail", args=[self.kwargs['pk']])
 
 
 class MangaDeleteView(LoginRequiredMixin, DeleteView):
     model = Manga
     success_url = reverse_lazy("manga_list")
 
-
-# class VolumeListView(ListView):
-# 	model = Volume
-# 	template_name = "Volume_list.html"
-# 	context_object_name = "volume_objects"
 
 class VolumeCreateView(CreateView, LoginRequiredMixin):
     template_name = "volume_create.html"
@@ -72,91 +66,74 @@ class VolumeCreateView(CreateView, LoginRequiredMixin):
 
 
 class ChapterDetailView(View):
-    template_name = "chapter_detail.html"
+    template_name = "chapter/chapter_detail.html"
 
     def get(self, request, chapter=None, m_pk=None, volume=None, page=None):
+        manga = get_object_or_404(Manga, id=m_pk)
+        volume = get_object_or_404(Volume, number=volume, manga=manga)
+        chapter = get_object_or_404(Chapter, number=chapter, volume=volume)
+        page = get_object_or_404(Page, number=page)
+        pages = get_list_or_404(Page.objects.filter(chapter=chapter))
 
-        manga_object = Manga.objects.filter(id=m_pk).first()
-        if not manga_object:
-            return HttpResponseNotFound()
-        volume_object = Volume.objects.filter(number=volume, manga=manga_object).first()
-        if not manga_object:
-            return HttpResponseNotFound()
-        chapter_object = Chapter.objects.filter(number=chapter, volume=volume_object).first()
-        if not volume_object:
-            return HttpResponseNotFound()
-        page_objects = Page.objects.filter(chapter=chapter_object)
-        if not page_objects:
-            return HttpResponseNotFound()
-        page_object = page_objects.filter(number=page).first()
-        if not page_object:
-            return HttpResponseNotFound()
-        return render(request, self.template_name,
-                      {
-                          "manga_object": manga_object,
-                          "volume_object": volume_object,
-                          "chapter_object": chapter_object,
-                          "page_objects": page_objects,
-                          "page_object": page_object
-                      })
+        context = {
+            "manga": manga,
+            "volume": volume,
+            "chapter": chapter,
+            "pages": pages,
+            "page": page
+        }
+        return render(request, self.template_name, context)
 
 
-# class ChapterCreateView(FormView, LoginRequiredMixin):
+def validate_and_save_pages_archive(file, chapter):
+    validate_archive_extension(file)
 
-# 	template_name = "chapter_create.html"
-# 	form_class = ChapterForm
+    with zipfile.ZipFile(file, mode='r') as archive:
+        pages = []
 
-# 	# def get(self, request):
-# 	# 	form = ChapterForm()
-# 	# 	return render(request, self.template_name, {"form" : form})
+        for image in archive.infolist():
+            errors = validate_image(image)
 
-# 	def get_success_url(self):
-# 		pk = self.kwargs["pk"]
-# 		return reverse("manga_update", kwargs = {"pk" : pk})
-
-# 	def post(self, request):
-# 		form_class = self.get_form_class()
-# 		form = self.get_form(form_class)
-# 		if form.is_valid():
-# 			return self.form_valid(form)
-# 		else:
-# 			return self.form_invalid(form)
-
-# 	def form_valid(self, form):
-# 		images = form.cleaned_data["images"]
-# 		for image in images:
-# 			pass
-# 		return super().form_valid()
-
-
-def validate_and_save_pages_archive(archive, chapter):
-    acceptable_archive_extensions = ['zip']
-    acceptable_images_extensions = ['jpeg', 'png', 'jpg']
-    errors = []
-    archive_members_names = []
-    if archive.name.split('.')[-1] not in acceptable_archive_extensions:
-        raise ValidationError(f'the file must be a [{", ".join(acceptable_archive_extensions)}] archive')
-    with zipfile.ZipFile(archive, mode='r') as opened_archive:
-        for archive_member in opened_archive.infolist():
-            print(archive_member.filename.split('.')[-1], archive_member.is_dir())
-            if archive_member.is_dir() or archive_member.filename.split('.')[-1] not in acceptable_images_extensions:
-                errors.append('archive must contain only images files')
-            elif not archive_member.filename.split('.')[0].isnumeric():
-                errors.append('file name must contain only numbers')
-
-            if archive_member.filename not in archive_members_names:
-                archive_members_names.append(archive_member.filename)
-            else:
-                errors.append('file names must be unique')
-
-            if errors:
+            if len(errors) > 0:
                 chapter.delete()
                 raise ValidationError(errors)
 
-            with opened_archive.open(archive_member, mode='r') as content:
-                page = Page(number=int(archive_member.filename.split('.')[0]), chapter=chapter)
-                page.image.save(archive_member.filename, ContentFile(content.read()))
-                page.save()
+            with archive.open(image, mode='r') as content:
+                number = int(image.filename.split('.')[0])
+
+                page = Page(number=number, chapter=chapter)
+                page.image.save(image.filename, ContentFile(content.read()))
+                pages.append(page)
+
+        Page.objects.bulk_create(pages)
+
+
+def validate_archive_extension(archive):
+    if archive.name.split('.')[-1] != 'zip':
+        raise ValidationError('the file must be a zip archive')
+
+
+def validate_image(image):
+    errors = []
+    image_formats = ['jpeg', 'png', 'jpg']
+    added_images = []
+
+    not_image = image.filename.split('.')[-1] not in image_formats
+    name_is_number = image.filename.split('.')[0].isnumeric()
+
+    if image.is_dir() or not_image:
+        errors.append('archive must contain only images files')
+
+    elif not name_is_number:
+        errors.append('file name must contain only numbers')
+
+    if image.filename in added_images:
+        errors.append('file names must be unique')
+        return errors
+
+    added_images.append(image.filename)
+
+    return errors
 
 
 class ChapterInline:
@@ -208,16 +185,6 @@ class ChapterInline:
 
 class ChapterCreateView(ChapterInline, CreateView, LoginRequiredMixin):
 
-    # def post(self, request):
-    # form = ChapterForm(request.POST)
-    # form2 = ChapterImageForm(request.POST, request.FILES)
-    # images = request.FILES.getlist('images')
-    # if form.is_valid() and form2.is_valid():
-    #     for image in images:
-    #     	pass
-    #     return redirect(reverse(self.success_url))
-    # context = {'form': form, 'form2': form2}
-    # return render(request, 'projects/project_form.html', context)
     def get(self, request, *args, **kwargs):
         self.initial_form_data = kwargs['manga']
         return super().get(request, *args, **kwargs)

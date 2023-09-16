@@ -4,6 +4,7 @@ import datetime
 YEAR_CHOICES = [(r, r) for r in range(1945, datetime.date.today().year + 1)]
 
 
+# TODO functions must be in lowercase
 def Manga_cover_directory_path(instance, filename):
     extension = filename.split('.')[-1]
     manga_name = instance.name
@@ -175,8 +176,6 @@ class Chapter(models.Model):
     title = models.CharField(max_length=255, verbose_name="Название главы")
     number = models.PositiveSmallIntegerField(verbose_name="Номер главы")
     volume = models.ForeignKey(Volume, on_delete=models.CASCADE, verbose_name="Том")
-
-    # translator = models.ForeignKey(Translator, on_delete = models.CASCADE, "Переводчик")
 
     def __str__(self):
         return f"{self.number}"
