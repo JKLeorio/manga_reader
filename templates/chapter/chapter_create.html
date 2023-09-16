@@ -5,45 +5,36 @@
 {% block content %}
     {% with named_formsets.pages as formset %}
         <div class="d-flex w-100 justify-content-center py-4">
-            <div class="card card-body shadow-sm" style="max-width: 800px">
+            <div class="card card-body shadow-sm" style="max-width: 500px">
                 <form enctype="multipart/form-data" method="post" id="product_form">
                     {% csrf_token %}
 
                     <h4 class="card-title">Добавить главу</h4>
 
-                    {% for field in form %}
-                        {% if field.name == 'volume' %}
-                            {{ field|as_crispy_field }} {# WTF?? Why do you need seperate volume field? #}
-                        {% else %}
-                            {{ field|as_crispy_field }}
-                        {% endif %}
-                    {% endfor %}
+                    {% crispy form %}
 
-
-                    {% with named_formsets.pages as formset %}
+                    {% with page_formsets.pages as formset %}
                         {{ formset.management_form }}
+
+                        {# page form template #}
                         <script type="text/html" id="pages-template">
                             <tr id="pages-__prefix__" class= hide_all>
-                                {% for fields in formset.empty_form.hidden_fields %}
-                                {{ fields }}
+                                {% for field in formset.empty_form.hidden_fields %}
+                                    {{ field|as_crispy_field }}
                                 {% endfor %}
 
-                                {% for fields in formset.empty_form.visible_fields %}
-                                <td>{{fields}}</td>
+                                {% for field in formset.empty_form.visible_fields %}
+                                    <td>{{ field|as_crispy_field }}</td>
                                 {% endfor %}
                             </tr>
                         </script>
 
-                        <div class="table-responsive mt-4">
-
-                            <h4 class="card-title">Add Page</h4>
-
+                        <div class="mt-4">
                             <table class="table">
                                 <thead>
                                     <tr>
                                         <th>страница</th>
                                         <th>файл</th>
-                                        <th>удалить</th>
                                     </tr>
 
                                 </thead>
@@ -66,7 +57,7 @@
                             <button id="add-page-button" class="btn btn-dark add-pages">добавить</button>
                         </div>
                     {% endwith %}
-
+                    <hr>
                     <button type="submit" class="btn btn-dark">сохранить</button>
                 </form>
             </div>

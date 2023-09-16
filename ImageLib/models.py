@@ -175,7 +175,7 @@ class Volume(models.Model):
 class Chapter(models.Model):
     title = models.CharField(max_length=255, verbose_name="Название главы")
     number = models.PositiveSmallIntegerField(verbose_name="Номер главы")
-    volume = models.ForeignKey(Volume, on_delete=models.CASCADE, verbose_name="Том")
+    volume = models.ForeignKey(Volume, on_delete=models.CASCADE, verbose_name="Том", null=True, blank=True)
 
     def __str__(self):
         return f"{self.number}"
