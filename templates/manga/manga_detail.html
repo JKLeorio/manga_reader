@@ -4,75 +4,91 @@
 {% block content %}
 
 <div class="container">
-  <ul class="nav nav-tabs" id="myTab" role="tablist">
-    <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">Информация</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">Главы</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">Обсуждение</button>
-    </li>
-  </ul>
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#home">
+                Информация
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile">
+                Главы
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#contact">
+                Обсуждение
+            </button>
+        </li>
+    </ul>
 
-  <div class="tab-content" id="myTabContent">
-    <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-      <div class="card mb-3" style="width: 100%;">
-    <div class="row g-0">
-      <div class="col-md-4">
-        <img src="{{manga_object.manga_cover.url}}" class="img-fluid rounded-start" alt="...">
-          <div class="row cols-2 g-3">
-            <div class="col">
-              <a class="btn btn-primary btn-lg" type="button" href="{% url 'chapter_create_manga_bounded' manga=manga_object.pk %}">Добавить главу</a>
+    <div class="tab-content">
+        <div class="tab-pane fade show active" id="home">
+        <div class="card mb-3">
+            <div class="row">
+                <div class="col-4">
+                    <img src="{{ manga.manga_cover.url }}" width="100%" height="100%" style="object-fit: cover" alt="...">
+                </div>
+                <div class="col-8">
+                    <div class="card-body">
+                        <h4 class="card-title">
+                          {{ manga.name }}
+                        </h4>
+                        <div class="d-flex gap-2 py-2">
+                            <a class="btn btn-dark" href="{% url 'chapter_create_manga_bounded' manga.pk %}">
+                                Добавить главу
+                            </a>
+                            <a class="btn btn-dark" href="{% url 'manga_update' manga.pk %}">
+                                Редактировать
+                            </a>
+                        </div>
+
+                        <b>Описание:</b>
+                        <p class="card-text">{{manga.description}}</p>
+
+                        <ul>
+                            <li>дата выхода : {{manga.release_year}}</li>
+                            <li>статус : {{manga.status}}</li>
+                            <li>автор : {{manga.author}}</li>
+                            <li>художник : {{manga.painter}}</li>
+                            <li>формат :
+                                {% for elem in manga.release_format.all %}
+                                    {{ elem }}
+                                    {% if not forloop.last %},{% endif %}
+                                {% endfor %}
+                            </li>
+                        </ul>
+
+                        <div class="d-grid gap-2">
+                            {% with volume=manga.get_ordered_related_volumes %}
+                                {% with first_volume=volume.first first_chapter=volume.first.get_ordered_related_chapters.first %}
+                                  {% if first_volume and first_chapter %}
+                                    <a href="{% url 'chapter_detail' m_pk=manga.pk volume=1 chapter=1 page=1%}"
+                                        class="btn btn-info" type="button">
+                                        <h4>Начать читать с первой главы</h4>
+                                    </a>
+                                  {% endif %}
+                                {% endwith %}
+
+                                {% with last_volume=volume.last last_chapter=volume.last.get_ordered_related_chapters.last %}
+                                  {% if last_volume and last_chapter %}
+                                    <a href="{% url 'chapter_detail' m_pk=manga.pk volume=last_volume.number chapter=last_chapter.number page=1%}" class="btn btn-warning" type="button"><h4>Начать читать с последней главы</h4></a>
+                                  {% endif %}
+                                {% endwith %}
+                            {% endwith %}
+                        </div>
+
+                    </div>
+                </div>
             </div>
-            <div class="col">
-              <a class="btn btn-primary btn-lg" type="button" href="{% url 'manga_update' pk=manga_object.pk %}">Редактировать мангу</a>
-            </div>
         </div>
-      </div>
-      <div class="col-md-8">
-        <div class="card-body">
-          <h4 class="card-title"><strong>{{manga_object.name}}</strong></h4>
-          <p class="card-text">{{manga_object.description}}</p>
-
-          <p class="card-text"><small class="text-muted">{{manga_object|verbose_name:"release_year"}} : {{manga_object.release_year}}</small></p>
-          <p class="card-text"><small class="text-muted">{{manga_object|verbose_name:"status"}} : {{manga_object.status}}</small></p>
-          <p class="card-text"><small class="text-muted">{{manga_object|verbose_name:"author"}} : {{manga_object.author}}</small></p>
-          <p class="card-text"><small class="text-muted">{{manga_object|verbose_name:"painter"}} : {{manga_object.painter}}</small></p>
-          
-          <p class="card-text"><small class="text-muted">{{manga_object|verbose_name:"release_format"}} :
-           {% for elem in manga_object.release_format.all %}
-           {{ elem }}{% if not forloop.last %}, {% endif %}
-           {% endfor %}
-        </small></p>
-
-        <div class="d-grid gap-2">
-          {% with volume=manga_object.get_ordered_related_volumes %}
-            {% with first_volume=volume.first first_chapter=volume.first.get_ordered_related_chapters.first %}
-              {% if first_volume and first_chapter %}
-                <a href="{% url 'chapter_detail' m_pk=manga_object.pk volume=1 chapter=1 page=1%}" class="btn btn-info" type="button"><h4>Начать читать с первой главы</h4></a>
-              {% endif %}
-            {% endwith %}
-            {% with last_volume=volume.last last_chapter=volume.last.get_ordered_related_chapters.last %}
-              {% if last_volume and last_chapter %}
-                <a href="{% url 'chapter_detail' m_pk=manga_object.pk volume=last_volume.number chapter=last_chapter.number page=1%}" class="btn btn-warning" type="button"><h4>Начать читать с последней главы</h4></a>
-              {% endif %}
-            {% endwith %}
-          {% endwith %}
-        </div>
-
-        </div>
-      </div>
     </div>
-  </div>
-  </div>
 
     <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
       <div class="list-group">
-        {% for volume in manga_object.get_ordered_related_volumes %}
+        {% for volume in manga.get_ordered_related_volumes %}
           {% for chapter in volume.get_ordered_related_chapters %}
-            <a href="{% url 'chapter_detail' m_pk=manga_object.pk volume=volume.number chapter=chapter.number page=chapter.get_ordered_related_pages.first.number %}" class="list-group-item list-group-item-action">
+            <a href="{% url 'chapter_detail' m_pk=manga.pk volume=volume.number chapter=chapter.number page=chapter.get_ordered_related_pages.first.number %}" class="list-group-item list-group-item-action">
               Том {{ volume.number }} Глава {{ chapter.number}} - {{chapter.title}}
             </a>
           {% endfor %}
@@ -80,9 +96,9 @@
       </div>
   </div>
 
-    <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
-    ...
-  </div>
-  </div>
+        <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+            <h3 class="text-muted">Empty</h3>
+        </div>
+    </div>
 </div>
 {% endblock %}

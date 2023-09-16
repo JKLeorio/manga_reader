@@ -3,18 +3,18 @@ from django.shortcuts import render, reverse, redirect
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import View
-from django.views.generic import CreateView, ListView, UpdateView, DetailView, DeleteView
+from django.views.generic import CreateView, UpdateView, DetailView, DeleteView
 from django.http import HttpResponseNotFound
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
+from django_filters.views import FilterView
+
 from .filters import MangaFilter
 from .forms import MangaForm, ChapterForm, VolumeForm, PagesFormSet, AuthorForm, PainterForm, ChapterQuickForm
 from .models import Manga, Chapter, Volume, Page, Author, Painter
 
+
 import zipfile
-
-
-# Create your views here.
 
 
 class MangaCreateView(CreateView, LoginRequiredMixin):
@@ -23,35 +23,26 @@ class MangaCreateView(CreateView, LoginRequiredMixin):
     success_url = reverse_lazy('manga_list')
 
 
-class MangaListView(ListView):
+class MangaListView(FilterView):
+    filterset_class = MangaFilter
     template_name = 'manga/manga_list.html'
     model = Manga
     context_object_name = 'manga_objects'
-    filter_order = {"by_date_descending": "-release_year",
-                    'by_date_ascending': "release_year",
-                    "by_popularity": {}}
 
-    filter_order_options = {"by_date_descending": "По убыванию даты создания",
-                            "by_date_ascending": "По возрастанию даты создания",
-                            "by_popularity": "По популярности"}
+    def get_queryset(self):
+        params = self.request.GET
+        queryset = Manga.objects.all()
+        order_by = params.get('order_by')
+        if order_by:
+            queryset = queryset.order_by(order_by)
 
-    def get(self, request, *args, **kwargs):
-        response = super().get(request, *args, **kwargs)
-        filter_action = None
-        if 'order_by' in request.GET:
-            filter_action = (self.filter_order[request.GET.get('order_by')])
-        filter_ob = MangaFilter(request.GET, queryset=Manga.objects.all())
-        if filter_action:
-            filter_ob.qs.order_by(filter_action)
-        response.context_data['filter'] = filter_ob
-        response.context_data[self.context_object_name] = filter_ob.qs
-        return response
+        return queryset
 
 
 class MangaDetailView(DetailView):
     model = Manga
     template_name = "manga/manga_detail.html"
-    context_object_name = "manga_object"
+    context_object_name = "manga"
 
 
 class MangaUpdateView(LoginRequiredMixin, UpdateView):
@@ -171,7 +162,7 @@ def validate_and_save_pages_archive(archive, chapter):
 class ChapterInline:
     model = Chapter
     form_class = ChapterQuickForm
-    template_name = "chapter_create.html"
+    template_name = "chapter/chapter_create.html"
 
     def form_valid(self, form):
         named_formsets = self.get_named_formsets()

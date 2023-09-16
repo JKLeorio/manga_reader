@@ -1,46 +1,34 @@
 {% extends 'base.html' %}
 
-{% load custom_tags_extra %}
+{% load custom_tags_extra crispy_forms_tags %}
 
 {% block content %}
 
 <div class="container">
-  <h1></h1>
-  <div class="row row-cols-4">
-  <div class="col">
-      <select class="form-select" onchange="location = this.value;">
-        {% if view.request.GET|get_item:'order_by' in view.filter_order %}
-          {% with request_option_value=view.request.GET|get_item:'order_by' %}
-            <option selected hidden="">{{view.filter_order_options|get_item:request_option_value}}</option>
-            {% for value, option in view.filter_order_options.items %}
-              {% if value != request_option_value %}
-                <option value="{% set_get_parameter request 'order_by' value %}">{{option}}</option>
-              {% endif %}
-            {% endfor %}
-          {% endwith %}
-        {% else %}
-          <option selected hidden="">Cортировать</option>
-          {% for value, option in view.filter_order_options.items %}
-            <option value="{% set_get_parameter request 'order_by' value %}">{{option}}</option>
-          {% endfor %}
-        {% endif %}
-      </select>
-  </div>
-  <div class="col">
-    <div class="dropdown" id="ListDropDown">
-      <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-        Фильтры
-      </button>
-      <div class="dropdown-menu">
-      <form class="px-4 py-3">
-        {{filter.form.as_p}}
-        <input type="submit" value="Найти">
-      </form>
-      </div>
+    <div class="d-flex gap-2">
+        <div class="dropdown" id="sortDropdown">
+            <button class="btn btn-outline-dark dropdown-toggle" id="sort" data-bs-toggle="dropdown">
+                 сортировка
+            </button>
+            <div class="dropdown-menu">
+                <a class="dropdown-item" href="?order_by=-release_year">По убыванию даты создания</a>
+                <a class="dropdown-item" href="?order_by=release_year">По возрастанию даты создания</a>
+            </div>
+        </div>
+
+        <div class="dropdown" id="ListDropDown">
+            <button class="btn btn-dark" id="filter" data-bs-toggle="dropdown">
+                Фильтры
+            </button>
+            <div class="dropdown-menu">
+                <form class="px-4 py-3">
+                    {{ filter.form|crispy }}
+                    <input type="submit" value="Найти">
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
-  <h1></h1>
+
   <div class="row row-cols-5 g-5">
     {% for manga_object in manga_objects %}
     <div class="col">
@@ -74,15 +62,17 @@
     {% endfor %}
   </div>
 </div>
-
-
-<script type="text/javascript">
-var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-  return new bootstrap.Tooltip(tooltipTriggerEl)
-})
-$('#ListDropDown').click(function(e){
-    e.stopPropagation();
-})
-</script>
 {% endblock%}
+{% block script %}
+    <script>
+        let tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+
+        let tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+          return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+
+        $('#ListDropDown').click(function(e){
+            e.stopPropagation();
+        })
+    </script>
+{% endblock %}

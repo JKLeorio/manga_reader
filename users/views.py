@@ -38,7 +38,7 @@ class RegisterView(View):
 class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = User
     form_class = UserUpdateForm
-    template_name = 'profile_update.html'
+    template_name = 'profile/profile_update.html'
     queryset = User.objects.all()
 
     def get_object(self):

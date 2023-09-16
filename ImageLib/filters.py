@@ -5,8 +5,10 @@ from .models import Manga, ReleaseFormat
 
 
 class MangaFilter(FilterSet):
-    release_format = django_filters.ModelMultipleChoiceFilter(queryset=ReleaseFormat.objects.all(),
-                                                              widget=forms.CheckboxSelectMultiple)
+    release_format = django_filters.ModelMultipleChoiceFilter(
+        queryset=ReleaseFormat.objects.all(),
+        widget=forms.CheckboxSelectMultiple
+    )
 
     class Meta:
         model = Manga

@@ -45,22 +45,20 @@
                        class="rounded-circle object-fit-cover"
                     >
                 {% endif %}
-                <span class="ms-2">{{ user.nickname }}</span>
+                <span class="mx-2">{{ user.nickname }}</span>
             </a>
 
             {% else %}
         {% endif %}
 
 
-        <ul class="nav">
-            <li class="nav-link">
-                {% if user.is_authenticated %}
-                    <a class="btn btn-dark" href="{% url 'logout' %}">Выйти</a>
-                {% else %}
-                    <a class="nav-link active" href="{% url 'login' %}">Войти</a>
-                    <a class="nav-link active" href="{% url 'register' %}">Регистрация</a>
-                {% endif %}
-            </li>
-        </ul>
+        <div class="d-flex">
+            {% if user.is_authenticated %}
+                <a class="btn btn-dark" href="{% url 'logout' %}">Выйти</a>
+            {% else %}
+                <a class="nav-link active" href="{% url 'login' %}">Войти</a>
+                <a class="nav-link active" href="{% url 'register' %}">Регистрация</a>
+            {% endif %}
+        </div>
   </div>
 </nav>
