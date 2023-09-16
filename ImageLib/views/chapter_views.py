@@ -1,3 +1,4 @@
+from django.forms import ModelForm
 from django.shortcuts import render, redirect, get_object_or_404, get_list_or_404
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -63,42 +64,44 @@ def validate_and_save_pages_archive(file, chapter):
         Page.objects.bulk_create(pages)
 
 
-class ChapterInline:
+class ChapterInline(CreateView):
     model = Chapter
     form_class = ChapterQuickForm
+    success_url = "/"
 
-    def form_valid(self, form):
-        page_formsets = self.get_page_formsets()
-        if not all((x.is_valid() for x in page_formsets.values())):
-            return self.render_to_response(self.get_context_data(form=form))
+    def form_valid(self, form: ModelForm):
+        page_formset = PagesFormSet(
+            self.request.POST or None,
+            self.request.FILES or None,
+            prefix='pages'
+        )
+
+        if not page_formset.is_valid():
+            form.add_error(None, "page formset error")
+            return super().form_invalid(form)
 
         data = form.cleaned_data
         new_form = ChapterForm(data=data, files=form.files)
         chapter = new_form.save()
 
-        if form.is_valid():
-            archive = form.files.get('images', None)
+        archive = form.files.get('images', None)
+        if archive:
+            validate_and_save_pages_archive(archive, chapter)
 
-            if archive:
-                validate_and_save_pages_archive(archive, chapter)
-            else:
-                raise ValidationError(new_form.errors)
+        breakpoint()
 
-        for name, formset in page_formsets.items():
-            self.formset_pages_valid(formset, chapter)
+        for form in page_formset:
+            self.form_pages_valid(form, chapter)
 
         return super().form_valid(form)
 
-    def formset_pages_valid(self, formset, chapter):
-        pages = formset.save(commit=False)
-        for obj in formset.deleted_objects:
-            obj.delete()
-        for page in pages:
-            page.chapter = chapter
-            page.save()
+    def form_pages_valid(self, form, chapter):
+        page = form.save(commit=False)
+        page.chapter = chapter
+        page.save()
 
 
-class ChapterCreateView(ChapterInline, CreateView, LoginRequiredMixin):
+class ChapterCreateView(ChapterInline, LoginRequiredMixin):
     template_name = "chapter/chapter_create.html"
 
     def get_initial(self):
@@ -109,22 +112,8 @@ class ChapterCreateView(ChapterInline, CreateView, LoginRequiredMixin):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['page_formsets'] = self.get_page_formsets()
+        context['formset'] = PagesFormSet(prefix="pages")
         return context
-
-    def get_page_formsets(self):
-        if self.request.method == "GET":
-            return {
-                'pages': PagesFormSet(prefix='pages'),
-            }
-        else:
-            return {
-                'pages': PagesFormSet(
-                    self.request.POST or None,
-                    self.request.FILES or None,
-                    prefix='pages'
-                ),
-            }
 
 
 class ChapterUpdateView(ChapterInline, UpdateView, LoginRequiredMixin):

@@ -11,7 +11,7 @@
             </button>
         </li>
         <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#profile">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#chapters">
                 Главы
             </button>
         </li>
@@ -64,15 +64,17 @@
                                 {% with first_volume=volume.first first_chapter=volume.first.get_ordered_related_chapters.first %}
                                   {% if first_volume and first_chapter %}
                                     <a href="{% url 'chapter_detail' m_pk=manga.pk volume=1 chapter=1 page=1%}"
-                                        class="btn btn-info" type="button">
-                                        <h4>Начать читать с первой главы</h4>
+                                        class="btn btn-dark">
+                                        Начать читать с первой главы
                                     </a>
                                   {% endif %}
                                 {% endwith %}
 
                                 {% with last_volume=volume.last last_chapter=volume.last.get_ordered_related_chapters.last %}
                                   {% if last_volume and last_chapter %}
-                                    <a href="{% url 'chapter_detail' m_pk=manga.pk volume=last_volume.number chapter=last_chapter.number page=1%}" class="btn btn-warning" type="button"><h4>Начать читать с последней главы</h4></a>
+                                    <a href="{% url 'chapter_detail' m_pk=manga.pk volume=last_volume.number chapter=last_chapter.number page=1%}" class="btn btn-outline-dark">
+                                        Начать читать с последней главы
+                                    </a>
                                   {% endif %}
                                 {% endwith %}
                             {% endwith %}
@@ -84,11 +86,12 @@
         </div>
     </div>
 
-    <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+    <div class="tab-pane fade" id="chapters" role="tabpanel" aria-labelledby="profile-tab">
       <div class="list-group">
         {% for volume in manga.get_ordered_related_volumes %}
           {% for chapter in volume.get_ordered_related_chapters %}
-            <a href="{% url 'chapter_detail' m_pk=manga.pk volume=volume.number chapter=chapter.number page=chapter.get_ordered_related_pages.first.number %}" class="list-group-item list-group-item-action">
+            <a href="{% url 'chapter_detail' m_pk=manga.pk volume=volume.number chapter=chapter.number page=chapter.get_ordered_related_pages.first.number %}"
+               class="list-group-item list-group-item-action">
               Том {{ volume.number }} Глава {{ chapter.number}} - {{chapter.title}}
             </a>
           {% endfor %}

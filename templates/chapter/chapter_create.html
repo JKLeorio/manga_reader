@@ -3,82 +3,76 @@
 {% load crispy_forms_tags custom_tags_extra %}
 
 {% block content %}
-    {% with named_formsets.pages as formset %}
-        <div class="d-flex w-100 justify-content-center py-4">
-            <div class="card card-body shadow-sm" style="max-width: 500px">
-                <form enctype="multipart/form-data" method="post" id="product_form">
-                    {% csrf_token %}
+    <div class="d-flex w-100 justify-content-center py-4">
+        <form enctype="multipart/form-data" method="post" style="width: 500px">
+            <div class="card card-body shadow-sm">
+                {% csrf_token %}
 
-                    <h4 class="card-title">Добавить главу</h4>
+                <h4 class="card-title">Добавить главу</h4>
 
-                    {% crispy form %}
+                {% crispy form %}
 
-                    {% with page_formsets.pages as formset %}
-                        {{ formset.management_form }}
+                {# page form template #}
+                <script type="text/html" id="pages-template">
+                    <tr id="pages-__prefix__" class= hide_all>
+                        {% for field in formset.empty_form.hidden_fields %}
+                            {{ field|as_crispy_field }}
+                        {% endfor %}
 
-                        {# page form template #}
-                        <script type="text/html" id="pages-template">
-                            <tr id="pages-__prefix__" class= hide_all>
-                                {% for field in formset.empty_form.hidden_fields %}
-                                    {{ field|as_crispy_field }}
-                                {% endfor %}
+                        {% for field in formset.empty_form.visible_fields %}
+                            <td>{{ field|as_crispy_field }}</td>
+                        {% endfor %}
+                    </tr>
+                </script>
 
-                                {% for field in formset.empty_form.visible_fields %}
-                                    <td>{{ field|as_crispy_field }}</td>
-                                {% endfor %}
+                <div class="mt-4">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>страница</th>
+                                <th>файл</th>
                             </tr>
-                        </script>
 
-                        <div class="mt-4">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>страница</th>
-                                        <th>файл</th>
-                                    </tr>
+                        </thead>
+                        <tbody id="pages-table">
+                            {{ formset.management_form }}
+                            {{ formset.non_form_errors|as_crispy_errors }}
 
-                                </thead>
-                                <tbody id="pages-table">
+                            {% for page_form in formset %}
+                                <tr id="pages-{{ forloop.counter0 }}" class= hide_all>
+                                    <td>{{ page_form.number|as_crispy_field }}</td>
+                                    <td>{{ page_form.image|as_crispy_field  }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <button id="add-page-button" class="btn btn-dark add-pages">добавить</button>
+                </div>
+                <hr>
+                <button type="submit" class="btn btn-dark">сохранить</button>
 
-                                    {{ formset.non_form_errors|as_crispy_errors }}
-
-                                    {% for forms in formset %}
-                                        {{ forms.management_form }}
-                                        <tr id="pages-{{ forloop.counter0 }}" class= hide_all>
-                                            {% for field in forms.visible_fields %}
-                                                <td>
-                                                    {{ field|as_crispy_field }}
-                                                </td>
-                                            {% endfor %}
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                            <button id="add-page-button" class="btn btn-dark add-pages">добавить</button>
-                        </div>
-                    {% endwith %}
-                    <hr>
-                    <button type="submit" class="btn btn-dark">сохранить</button>
-                </form>
             </div>
-        </div>
+        </form>
+    </div>
+{% endblock %}
 
-        <script type="text/javascript">
-            $(document).ready(function() {
-                $('.add-pages').click(function (e) {
-                    e.preventDefault();
-                    let table = $("#pages-table");
 
-                    let count = table.children().length;
-                    let tmplMarkup = $('#pages-template').html();
-                    let compiledTmpl = tmplMarkup.replace(/__prefix__/g, count);
+{% block script %}
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('.add-pages').click(function (e) {
+                e.preventDefault();
+                let table = $("#pages-table");
 
-                    table.append(compiledTmpl);
+                let count = table.children().length;
+                let tmplMarkup = $('#pages-template').html();
+                let compiledTmpl = tmplMarkup.replace(/__prefix__/g, count);
 
-                    // update form count
-                    $('#id_pages-TOTAL_FORMS').attr('value', count + 1);
-                });
+                table.append(compiledTmpl);
+
+                // update form count
+                $('#id_pages-TOTAL_FORMS').attr('value', count + 1);
             });
-        </script>
-	{% endwith %}
+        });
+    </script>
 {% endblock %}

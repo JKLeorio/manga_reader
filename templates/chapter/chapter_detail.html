@@ -1,25 +1,26 @@
-{% extends 'base_without_navbar.html' %}
+{% extends 'base.html' %}
 
 {% load custom_tags_extra %}
 
 {% block content %}
 <style>
-.carousel-control-next,
-.carousel-control-prev {
-    filter: invert(50%);
-}
+    .carousel-control-next,
+    .carousel-control-prev {
+        filter: invert(50%);
+    }
 </style>
+
 <div class="container">
     <h1 class="mt-3"></h1>
 	<div class="row justify-content-md-center">
 		<div class="col">
 			<div class="dropdown">
-			  <a class="btn btn-primary btn-lg dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-bs-toggle="dropdown" aria-expanded="false">
+			  <a class="btn btn-primary btn-lg dropdown-toggle" data-bs-toggle="dropdown">
 			    Страницы
 			  </a>
 			  <ul class="dropdown-menu" aria-labelledby="dropdownMenuLink">
 			  	<div class="overflow-auto" style="max-width: 150px; max-height: 300px;">
-			  		{% for page in page_objects%}
+			  		{% for page in pages %}
 			  		<li>
 				      <a class="dropdown-item" href="#" image_url="{{page.image.url}}" position="{{forloop.counter}}" page="{{page.number}}">{{page.number}}</a>
 					</li>
@@ -32,7 +33,7 @@
 			<button type="button" id="pageN" class="btn btn-primary btn-lg" disabled>Страница {{page_object.number}}</button>
 		</div>
 		<div class="col">
-			<a href="{% url 'manga_detail' manga_object.pk %}" class="btn btn-primary btn-lg">{{manga_object.name}}</a>
+			<a href="{% url 'manga_detail' manga.pk %}" class="btn btn-primary btn-lg">{{manga.name}}</a>
 		</div>
 		<div class="col">
 			<button type="button" class="btn btn-primary btn-lg" disabled>Том {{page_object.chapter.volume.number}} Глава {{page_object.chapter.number}}</button>
@@ -113,13 +114,13 @@
 
 	<h1 class="mt-3"></h1>
 
-<!-- 	<a href="/manga/{{manga_object.pk}}/volume/{{volume_object.number}}/chapter/{{chapter_object.number}}/page/{{page_object.number|add:'1'}}/">
+<!-- 	<a href="/manga/{{manga.pk}}/volume/{{volume.number}}/chapter/{{chapter.number}}/page/{{page.number|add:'1'}}/">
 		<img src="{{page_object.image.url}}" class="img-fluid" alt="...">
 	</a> -->
 	<div id="carouselExampleControls" class="carousel slide">
 	  <div class="carousel-inner">
 	  	<div class="container" id="images_block" style="width:100%; min-height:100%;">
-			<img src="{{page_object.image.url}}" class="img-fluid" alt="..." style="display: block;margin-left: auto;margin-right: auto" position="{{page_objects|get_model_index:page_object}}">
+			<img src="{{page.image.url}}" class="img-fluid" alt="..." style="display: block;margin-left: auto;margin-right: auto" position="{{pages|get_model_index:page}}">
 		</div>
 	  </div>
 	  <button class="carousel-control-prev" type="button" arg="prev">
