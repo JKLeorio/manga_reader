@@ -1,6 +1,15 @@
 /venv
+
 .env
+
 db.sqlite3
+
 /media
-__pycache__
-.idea
+
+__pycache__/
+
+.idea/
+
+.vscode/
+
+.ruff_cache/
