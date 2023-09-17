@@ -46,7 +46,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='manga',
             name='manga_cover',
-            field=models.ImageField(default=None, upload_to=ImageLib.models.Manga_cover_directory_path, verbose_name='Обложка манги'),
+            field=models.ImageField(default=None, upload_to=ImageLib.models.manga_cover_directory_path, verbose_name='Обложка манги'),
             preserve_default=False,
         ),
     ]
