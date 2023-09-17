@@ -4,8 +4,7 @@ import datetime
 YEAR_CHOICES = [(r, r) for r in range(1945, datetime.date.today().year + 1)]
 
 
-# TODO functions must be in lowercase
-def Manga_cover_directory_path(instance, filename):
+def manga_cover_directory_path(instance, filename):
     extension = filename.split('.')[-1]
     manga_name = instance.name
     filename = f"{manga_name}_cover.{extension}"
@@ -95,7 +94,7 @@ class Manga(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE, verbose_name="Автор")
     painter = models.ForeignKey(Painter, on_delete=models.CASCADE, verbose_name="Художник")
     release_format = models.ManyToManyField(ReleaseFormat, verbose_name="Формат выпуска")
-    manga_cover = models.ImageField(upload_to=Manga_cover_directory_path, verbose_name="Обложка манги")
+    manga_cover = models.ImageField(upload_to=manga_cover_directory_path, verbose_name="Обложка манги")
     genres = models.ManyToManyField(Genre, verbose_name="Жанры", blank=True)
 
     def get_ordered_related_volumes(self):
