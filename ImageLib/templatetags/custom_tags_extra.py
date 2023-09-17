@@ -9,14 +9,15 @@ def verbose_name(the_object, the_field):
 
 
 @register.filter
-def cut_description(description):
-    allowable_length = 150
+def cut_description(description, allowable_length=150):
     text = "....."
     if not description:
         return text
+    elif len(description) <= allowable_length:
+        return description
     elif len(description.split()) < 2:
         if len(description) <= allowable_length:
-            return description + text
+            return description
         else:
             return description[:allowable_length] + text
     short_description = str()

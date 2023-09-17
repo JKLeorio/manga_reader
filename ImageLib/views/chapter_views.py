@@ -1,4 +1,5 @@
 from django.forms import ModelForm
+from django.http import Http404
 from django.shortcuts import render, redirect, get_object_or_404, get_list_or_404
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -24,12 +25,14 @@ class VolumeCreateView(CreateView, LoginRequiredMixin):
 class ChapterDetailView(View):
     template_name = "chapter/chapter_detail.html"
 
-    def get(self, request, chapter=None, m_pk=None, volume=None, page=None):
-        manga = get_object_or_404(Manga, id=m_pk)
-        volume = get_object_or_404(Volume, number=volume, manga=manga)
-        chapter = get_object_or_404(Chapter, number=chapter, volume=volume)
-        page = get_object_or_404(Page, number=page)
-        pages = get_list_or_404(Page.objects.filter(chapter=chapter))
+    def get(self, request, chapter=None, manga=None, volume=None, page=None):
+        manga = get_object_or_404(Manga, id=manga)
+        volume = get_object_or_404(Volume, id=volume, manga=manga)
+        chapter = get_object_or_404(Chapter, id=chapter, volume=volume)
+        page = get_object_or_404(Page, id=page)
+        pages = Page.objects.filter(chapter=chapter)
+        if not pages:
+            raise Http404("page not found")
 
         context = {
             "manga": manga,

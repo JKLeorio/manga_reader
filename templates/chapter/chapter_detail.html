@@ -30,24 +30,24 @@
 			</div>
 		</div>
 		<div class="col">
-			<button type="button" id="pageN" class="btn btn-primary btn-lg" disabled>Страница {{page_object.number}}</button>
+			<button type="button" id="pageN" class="btn btn-primary btn-lg" disabled>Страница  {{page.number}}</button>
 		</div>
 		<div class="col">
 			<a href="{% url 'manga_detail' manga.pk %}" class="btn btn-primary btn-lg">{{manga.name}}</a>
 		</div>
 		<div class="col">
-			<button type="button" class="btn btn-primary btn-lg" disabled>Том {{page_object.chapter.volume.number}} Глава {{page_object.chapter.number}}</button>
+			<button type="button" class="btn btn-primary btn-lg" disabled>Том {{page.chapter.volume.number}} Глава {{page.chapter.number}}</button>
 		</div>
 		<div class="col">
 			<div class="btn-group" role="group">
-			{% with page=page_objects.first %}
+			{% with page=pages.first %}
 				{% with current_chapter=page.chapter current_volume=page.chapter.volume manga=page.chapter.volume.manga last_chapter=page.chapter.volume.get_ordered_related_chapters.last first_chapter=page.chapter.volume.get_ordered_related_chapters.first %}
 					{% if current_chapter == first_chapter%}
 						{% with next_volume_chapter=current_volume.get_prev_volume_chapter %}
 						{% if next_volume_chapter %}
 							{% with next_chapter=next_volume_chapter|get_item:'chapter'%}
 								{% with next_chapter|get_first_page_by_chapter:'page_set' as next_page %}
-									<a href="{% url 'chapter_detail' m_pk=manga.pk volume=next_volume_chapter|get_item:'volume_number' chapter=next_volume_chapter|get_item:'chapter_number' page=next_page.number %}" type="button" class="btn btn-primary btn-lg" aria-label="Next">
+									<a href="{% url 'chapter_detail' manga=manga.pk volume=next_volume_chapter|get_item:'volume_id' chapter=next_volume_chapter|get_item:'chapter_id' page=next_page.pk %}" type="button" class="btn btn-primary btn-lg" aria-label="Next">
 										<span aria-hidden="true">&laquo;</span>
 									</a>
 								{% endwith %}
@@ -61,7 +61,7 @@
 					{% else %}
 						{% with next_chapter=current_chapter.get_prev_chapter %}
 							{% with next_chapter|get_first_page_by_chapter:'page_set' as next_page %}
-								<a href="{% url 'chapter_detail' m_pk=manga.pk volume=current_volume.number chapter=next_chapter.number page=next_page.number%}" type="button" class="btn btn-primary btn-lg" aria-label="Next">
+								<a href="{% url 'chapter_detail' manga=manga.pk volume=current_volume.pk chapter=next_chapter.pk page=next_page.pk%}" type="button" class="btn btn-primary btn-lg" aria-label="Next">
 									<span aria-hidden="true">&laquo;</span>
 								</a>
 							{% endwith %}
@@ -74,7 +74,7 @@
 							{% for volume in manga.get_ordered_related_volumes %}
 								{% for chapter in volume.get_ordered_related_chapters %}
 									{% with chapter|get_first_page_by_chapter:'page_set' as next_page %}
-										<li><a class="dropdown-item" href="{% url 'chapter_detail' m_pk=manga.pk volume=volume.number chapter=chapter.number page=next_page.number %}">Том {{volume.number}} Глава {{ chapter.number }}</a></li>
+										<li><a class="dropdown-item" href="{% url 'chapter_detail' manga=manga.pk volume=volume.pk chapter=chapter.pk page=next_page.pk %}">Том {{volume.number}} Глава {{ chapter.number }}</a></li>
 									{% endwith %}
 								{% endfor %}
 							{% endfor %}
@@ -86,7 +86,7 @@
 							{% if next_volume_chapter %}
 								{% with next_chapter=next_volume_chapter|get_item:'chapter'%}
 									{% with next_chapter|get_first_page_by_chapter:'page_set' as next_page %}
-									<a href="{% url 'chapter_detail' m_pk=manga.pk volume=next_volume_chapter|get_item:'volume_number' chapter=next_volume_chapter|get_item:'chapter_number' page=next_page.number %}" type="button" class="btn btn-primary btn-lg" aria-label="Next">
+									<a href="{% url 'chapter_detail' manga=manga.pk volume=next_volume_chapter|get_item:'volume_id' chapter=next_volume_chapter|get_item:'chapter_id' page=next_page.pk %}" type="button" class="btn btn-primary btn-lg" aria-label="Next">
 										<span aria-hidden="true">&raquo;</span>
 									</a>
 									{% endwith %}
@@ -100,7 +100,7 @@
 					{% else %}
 						{% with next_chapter=current_chapter.get_next_chapter %}
 							{% with next_chapter|get_first_page_by_chapter:'page_set' as next_page %}
-								<a href="{% url 'chapter_detail' m_pk=manga.pk volume=current_volume.number chapter=next_chapter.number page=next_page.number %}" type="button" class="btn btn-primary btn-lg" aria-label="Next">
+								<a href="{% url 'chapter_detail' manga=manga.pk volume=current_volume.pk chapter=next_chapter.pk page=next_page.pk %}" type="button" class="btn btn-primary btn-lg" aria-label="Next">
 									<span aria-hidden="true">&raquo;</span>
 								</a>
 							{% endwith %}
@@ -114,9 +114,6 @@
 
 	<h1 class="mt-3"></h1>
 
-<!-- 	<a href="/manga/{{manga.pk}}/volume/{{volume.number}}/chapter/{{chapter.number}}/page/{{page.number|add:'1'}}/">
-		<img src="{{page_object.image.url}}" class="img-fluid" alt="...">
-	</a> -->
 	<div id="carouselExampleControls" class="carousel slide">
 	  <div class="carousel-inner">
 	  	<div class="container" id="images_block" style="width:100%; min-height:100%;">
@@ -140,10 +137,10 @@ $(document).ready(function() {
         var image_url = $( this ).attr("image_url");
         if (typeof image_url !== 'undefined' && image_url !== false) {
         	var images = $( ".img-fluid" ).filter(function() {
-        		// return this.style.display == "block" || this.style.display == "inline"
         		return this.style.display != "none"
         	});
-        	var buff = $( "#images_block" ).filter(function() {
+        	var buff = $( "#images_block > img" ).filter(function() {
+        		console.log(this.getAttribute("src") == image_url);
         		return this.getAttribute("src") == image_url
         	})
         	if(images.length){
@@ -154,14 +151,27 @@ $(document).ready(function() {
         		$( "#images_block" ).append("<img src='"+ image_url + "' class='img-fluid' alt='...' position='" + $(this).attr("position") +"' page='" + $(this).attr("page") + "' style='display: block;margin-left: auto;margin-right: auto'>")
         	}
         	else {
-        		buff[0].css("display", "block");
+        		$(buff[0]).css("display", "block");
         	}
         }
     });
     $("button").click(function(event) {
-    	var elem = $(this);
-    	var max_position = Number("{{page_objects.count}}");
+        var elem = $(this);
+    	var max_position = Number("{{pages.count}}");
     	var button_type = false;
+
+    	function get_position(position, button_type) {
+    	   	if(position + button_type >= max_position) {
+        		return max_position;
+			}
+			else if (position + button_type <= 1){
+				return 1;
+			}
+			else{
+				return position + button_type;
+			};
+    	};
+
     	if (elem.attr("arg") == "prev") {
     		button_type = -1;
     	}
@@ -172,25 +182,22 @@ $(document).ready(function() {
     		var images = $( ".img-fluid" ).filter(function() {
         		return this.style.display != "none";
         	});
-        	var buff = $( "#images_block" ).filter(function() {
-        		var the_position = images[0].getAttribute("position");
-        		return the_position + button_type == this.getAttribute("position")
-        	});
         	if(images.length) {
         		images[0].style.display = "none";
         	};
-        	var current_position = false;
+
         	var position = Number(images[0].getAttribute("position"));
+        	var current_position = false;
+
+        	var buff = $( "#images_block > img" ).filter(function() {
+        		var the_position = get_position(Number(images[0].getAttribute("position")), button_type);
+        		console.log(the_position);
+        		return the_position == this.getAttribute("position")
+        	});
+
+        	current_position = get_position(position, button_type);
+
         	if(!buff.length) {
-        		if(position + button_type >= max_position) {
-        			current_position = max_position;
-        		} 
-        		else if (position + button_type <= 1){
-        			current_position = 1;
-        		}
-        		else{
-        			current_position = position + button_type;
-        		};
         		if(current_position){
         			var image_url = $("a.dropdown-item").filter(function() {
         				return String(current_position) == this.getAttribute("position");
@@ -200,7 +207,7 @@ $(document).ready(function() {
         		}
         	}
         	else {
-        		buff[0].css("display", "block");
+        		$(buff[0]).css("display", "block");
         	};
         };
     })

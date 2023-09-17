@@ -8,14 +8,16 @@
         <title>MangaRead</title>
     </head>
     <body>
-        {% include '_layout/navbar.html' %}
-        <main>
-            {% block content %}
-            {% endblock %}
-        </main>
-        {% include '_layout/footer.html' %}
+        <div class="container">
+            {% include '_layout/navbar.html' %}
+            <main>
+                {% block content %}
+                {% endblock %}
+            </main>
+            {% include '_layout/footer.html' %}
 
-        {% block script %}{% endblock %}
+            {% block script %}{% endblock %}
+        </div>
     </body>
 
     {% include '_layout/global_styles.html' %}

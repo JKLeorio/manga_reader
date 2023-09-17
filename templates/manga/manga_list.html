@@ -42,7 +42,7 @@
                     <div class="card-body">
                         <h5 class="card-title">{{ manga.name }}</h5>
                         <i>год выпуска {{ manga.release_year }}</i>
-                        <p class="card-text">{{ manga.description }}</p>
+                        <p class="card-text">{{ manga.description|cut_description }}</p>
                     </div>
                 </div>
             </a>

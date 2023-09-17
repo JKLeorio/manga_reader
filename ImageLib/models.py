@@ -96,7 +96,7 @@ class Manga(models.Model):
     painter = models.ForeignKey(Painter, on_delete=models.CASCADE, verbose_name="Художник")
     release_format = models.ManyToManyField(ReleaseFormat, verbose_name="Формат выпуска")
     manga_cover = models.ImageField(upload_to=Manga_cover_directory_path, verbose_name="Обложка манги")
-    genres = models.ManyToManyField(Genre, verbose_name="Жанры", null=True, blank=True)
+    genres = models.ManyToManyField(Genre, verbose_name="Жанры", blank=True)
 
     def get_ordered_related_volumes(self):
         return self.volume_set.all().order_by("number")
@@ -140,8 +140,8 @@ class Volume(models.Model):
             return {
                 'volume': volume,
                 'chapter': chapter,
-                'volume_number': volume.number,
-                'chapter_number': chapter.number
+                'volume_id': volume.pk,
+                'chapter_id': chapter.pk
             }
 
         return None
@@ -161,8 +161,8 @@ class Volume(models.Model):
             return {
                 'volume': volume,
                 'chapter': chapter,
-                'volume_number': volume.number,
-                'chapter_number': chapter.number
+                'volume_id': volume.pk,
+                'chapter_id': chapter.pk
             }
 
         return None

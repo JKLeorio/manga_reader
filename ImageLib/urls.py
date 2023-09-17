@@ -10,7 +10,7 @@ urlpatterns = [
     path("create/", views.MangaCreateView.as_view(), name="manga_create"),
     path("<int:pk>/delete/", views.MangaDeleteView.as_view(), name="manga_delete"),
     path(
-        "<int:m_pk>/volume/<int:volume>/chapter/<int:chapter>/page/<int:page>/",
+        "<int:manga>/volume/<int:volume>/chapter/<int:chapter>/page/<int:page>/",
         views.ChapterDetailView.as_view(),
         name="chapter_detail"
     ),
