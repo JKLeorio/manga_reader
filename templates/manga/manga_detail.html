@@ -63,7 +63,7 @@
                             {% with volume=manga.get_ordered_related_volumes %}
                                 {% with first_volume=volume.first first_chapter=volume.first.get_ordered_related_chapters.first %}
                                   {% if first_volume and first_chapter %}
-                                    <a href="{% url 'chapter_detail' manga=manga.pk volume=1 chapter=1 page=1%}"
+                                    <a href="{% url 'chapter_detail' manga=manga.pk volume=first_volume.pk chapter=first_chapter.pk page=first_chapter.get_ordered_related_pages.first.pk %}"
                                         class="btn btn-dark">
                                         Начать читать с первой главы
                                     </a>
@@ -72,7 +72,7 @@
 
                                 {% with last_volume=volume.last last_chapter=volume.last.get_ordered_related_chapters.last %}
                                   {% if last_volume and last_chapter %}
-                                    <a href="{% url 'chapter_detail' manga=manga.pk volume=last_volume.pk chapter=last_chapter.pk page=1%}" class="btn btn-outline-dark">
+                                    <a href="{% url 'chapter_detail' manga=manga.pk volume=last_volume.pk chapter=last_chapter.pk page=last_chapter.get_ordered_related_pages.first.pk %}" class="btn btn-outline-dark">
                                         Начать читать с последней главы
                                     </a>
                                   {% endif %}

@@ -67,7 +67,7 @@ ROOT_URLCONF = 'config.urls'
 #     "openid",
 # ]
 #
-# SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = 'http://127.0.0.1:8000/users/social-auth/complete/google-oauth2/'
+# SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = 'http://127.0.0.1:8000/profile/social-auth/complete/google-oauth2/'
 #
 # SOCIAL_AUTH_PIPELINE = (
 #     'social_core.pipeline.social_auth.social_details',
@@ -96,6 +96,12 @@ TEMPLATES = [
         },
     },
 ]
+
+# AUTHENTICATION_BACKENDS = [
+#     'django.contrib.auth.backends.ModelBackend',
+#     'social_core.backends.google.GoogleOAuth2',
+# ]
+
 
 WSGI_APPLICATION = 'config.wsgi.application'
 

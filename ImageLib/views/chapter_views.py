@@ -12,7 +12,6 @@ from ..forms import ChapterForm, VolumeForm, PagesFormSet, ChapterQuickForm
 from ..models import Manga, Chapter, Volume, Page
 from ..utils import validate_archive_extension, validate_image
 
-
 import zipfile
 
 
@@ -30,7 +29,7 @@ class ChapterDetailView(View):
         volume = get_object_or_404(Volume, id=volume, manga=manga)
         chapter = get_object_or_404(Chapter, id=chapter, volume=volume)
         page = get_object_or_404(Page, id=page)
-        pages = Page.objects.filter(chapter=chapter)
+        pages = Page.objects.filter(chapter=chapter).order_by("number")
         if not pages:
             raise Http404("page not found")
 
@@ -90,8 +89,6 @@ class ChapterInline(CreateView):
         archive = form.files.get('images', None)
         if archive:
             validate_and_save_pages_archive(archive, chapter)
-
-        breakpoint()
 
         for form in page_formset:
             self.form_pages_valid(form, chapter)
