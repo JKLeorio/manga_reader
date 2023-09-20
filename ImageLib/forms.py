@@ -1,5 +1,5 @@
 from django import forms
-from django.forms import formset_factory
+from django.forms import inlineformset_factory
 from django.forms.widgets import CheckboxSelectMultiple, ClearableFileInput, FileInput
 
 from .models import Manga, Chapter, Volume, Page, Painter, Author
@@ -67,7 +67,9 @@ class PageForm(forms.ModelForm):
         fields = ["number", "image"]
 
 
-PagesFormSet = formset_factory(
+PagesFormSet = inlineformset_factory(
+    Chapter,
+    Page,
     form=PageForm,
     extra=1,
     can_delete=False,

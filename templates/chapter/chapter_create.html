@@ -4,53 +4,123 @@
 
 {% block content %}
     <div class="d-flex w-100 justify-content-center py-4">
-        <form enctype="multipart/form-data" method="post" style="width: 500px">
-            <div class="card card-body shadow-sm">
-                {% csrf_token %}
-
-                <h4 class="card-title">Добавить главу</h4>
-
-                {% crispy form %}
-
-                {# page form template #}
-                <script type="text/html" id="pages-template">
-                    <tr id="pages-__prefix__" class= hide_all>
-                        {% for field in formset.empty_form.hidden_fields %}
-                            {{ field|as_crispy_field }}
-                        {% endfor %}
-
-                        {% for field in formset.empty_form.visible_fields %}
-                            <td>{{ field|as_crispy_field }}</td>
-                        {% endfor %}
-                    </tr>
-                </script>
-
-                <div class="mt-4">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>страница</th>
-                                <th>файл</th>
-                            </tr>
-
-                        </thead>
-                        <tbody id="pages-table">
-                            {{ formset.management_form }}
-                            {{ formset.non_form_errors|as_crispy_errors }}
-
-                            {% for page_form in formset %}
-                                <tr id="pages-{{ forloop.counter0 }}" class= hide_all>
-                                    <td>{{ page_form.number|as_crispy_field }}</td>
-                                    <td>{{ page_form.image|as_crispy_field  }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    <button id="add-page-button" class="btn btn-dark add-pages">добавить</button>
+        <form enctype="multipart/form-data" class="container" method="post" id="product_form">
+            {% csrf_token %}
+            <div class="card">
+                <div class="card-header card-header-secondary">
+                    <h4 class="card-title">Add Chapter</h4>
                 </div>
-                <hr>
-                <button type="submit" class="btn btn-dark">сохранить</button>
+                {% for field in form %}
+                <div class="form-group card-body">
+                    {% if field.name == 'volume'%}
 
+                    <label>{{ field.label }}</label>
+                    {% if field.field.required %}
+                        <span style="color: red;" class="required">*</span>
+                    {% endif %}
+                    <select name="{{ field.html_name }}" required id="{{ field.id_for_label }}">
+                        {% for choice in field %}
+                            {% if forloop.first %}
+                                <option value="{{ choice.data.value }}">{{ choice.choice_label }}</option>
+                            {% else %}
+                                {% if form.instance.volume.pk != choice.data.value %}
+                                    <option value="{{ choice.data.value }}" hidden manga_id="{{form.fields|get:'volume'|get_attr:'queryset'|get:forloop.counter0|get_attr:'manga'|get_attr:'pk'}}">{{ choice.choice_label }}</option>
+                                {% elif form.instance.volume.manga.pk == form.fields|get:'volume'|get_attr:'queryset'|get:forloop.counter0|get_attr:'manga'|get_attr:'pk' %}
+                                    <option value="{{ choice.data.value }}" selected>{{ choice.choice_label }}</option>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+
+                    {% else %}
+                    <label>{{field.label}}</label>
+                    {% if field.field.required %}
+                    <span style="color: red;" class="required">*</span>
+                    {% endif %}
+
+                    {{field}}
+                    {% endif %}
+                    {% if field.help_text %}
+                    <small style="color: grey">{{ field.help_text }}</small>
+                    {% endif %}
+                    {% for error in field.errors %}
+                    <p style="color: red">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+            {{ formset.management_form }}
+            <script type="text/html" id="pages-template">
+                <tr id="pages-__prefix__" class= hide_all>
+                    {% for fields in formset.empty_form.hidden_fields %}
+                    {{ fields }}
+                    {% endfor %}
+
+                    {% for fields in formset.empty_form.visible_fields %}
+                    <td>{{fields}}</td>
+                    {% endfor %}
+                </tr>
+            </script>
+
+            <div class="table-responsive card mt-4">
+                <div class="card-header card-header-secondary">
+                    <h4 class="card-title">Add Page</h4>
+                </div>
+                <table class="table card-body">
+                    <thead class="text-secondary">
+                    <th>Page <span style="color: red;" class="required">*</span></th>
+                    <th></th>
+                    <th>Custom Delete btn</th>
+                    </thead>
+                    <tbody id="item-pages">
+                    {% for error in formset.non_form_errors %}
+                    <span style="color: red">{{ error }}</span>
+                    {% endfor %}
+                    {% for forms in formset %}
+                    {{ forms.management_form }}
+                    <tr id="pages-{{ forloop.counter0 }}" class= hide_all>
+                        {{ forms.id }}
+                        {% for field in forms.visible_fields %}
+                        <td>
+                            {{field}}
+                            {% for error in field.errors %}
+                            <span style="color: red">{{ error }}</span>
+                            {% endfor %}
+                        </td>
+                        {% endfor %}
+                        {% if forms.instance.pk %}
+                        <td>
+                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal{{forms.instance.pk}}">
+                                Delete
+                            </button>
+                            <!-- Modal -->
+                            <div class="modal fade" id="exampleModal{{forms.instance.pk}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel{{forms.instance.pk}}" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="exampleModalLabel{{forms.instance.pk}}">Are Your Sure You Want To Delete This?</h5>
+                                            <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <a href="{% url 'chapter_delete' forms.instance.pk %}" type="button" class="btn btn-primary">Yes, Delete</a>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <button type="button" id="add-page-button" class="btn btn-secondary add-pages">Добавить</button>
+            </div>
+            <h1></h1>
+            <div class="form-group">
+                <button type="submit" class="btn btn-secondary btn-block">Сохранить</button>
             </div>
         </form>
     </div>
@@ -58,21 +128,65 @@
 
 
 {% block script %}
-    <script type="text/javascript">
+<script type="text/javascript">
         $(document).ready(function() {
-            $('.add-pages').click(function (e) {
-                e.preventDefault();
-                let table = $("#pages-table");
+          $('.add-pages').click(function(ev) {
+              ev.preventDefault();
+              var count = $('#item-pages').children().length;
+              var tmplMarkup = $('#pages-template').html();
+              var compiledTmpl = tmplMarkup.replace(/__prefix__/g, count);
+              $('#item-pages').append(compiledTmpl);
 
-                let count = table.children().length;
-                let tmplMarkup = $('#pages-template').html();
-                let compiledTmpl = tmplMarkup.replace(/__prefix__/g, count);
+              // update form count
+              $('#id_pages-TOTAL_FORMS').attr('value', count+1);
+          });
 
-                table.append(compiledTmpl);
-
-                // update form count
-                $('#id_pages-TOTAL_FORMS').attr('value', count + 1);
+          var manga_select = $('#id_manga');
+          var volume_select = $("option[manga_id]").filter(function() {
+            var result = this.getAttribute("manga_id") == manga_select.val();
+            if(result){
+                return result;
+                }
+            else{
+                this.setAttribute("hidden","");
+                return false;
+                };
             });
+          for(let i=0; i < volume_select.length; i++) {
+            volume_select[i].removeAttribute("hidden");
+          };
+
+          $('#id_manga').on('change', function() {
+    <!--      var manga_select = $("option:not([manga_id],[selected]) + [value]");-->
+    <!--      var manga_select = $("#id_manga > option:not([selected])");-->
+          var manga_select = $('#id_manga');
+          var volume_select_all = $('#id_volume');
+          var volume_select = $("option[manga_id]").filter(function() {
+            var result = this.getAttribute("manga_id") == manga_select.val();
+            if(result){
+                return result;
+                }
+            else{
+                this.setAttribute("hidden","");
+                return false;
+                };
+            });
+          volume_select_all.val(null);
+          for(let i=0; i < volume_select.length; i++) {
+            volume_select[i].removeAttribute("hidden");
+          };
+        });
+        $("input#id_images").on('change', function() {
+        var formset_inputs = $('div.table-responsive.card.mt-4').find('button,input');
+        console.log(formset_inputs);
+        var status = Boolean($(this).val());
+        console.log(status);
+        console.log(formset_inputs.length);
+        for(let i=0; i < formset_inputs.length; i++) {
+            console.log(formset_inputs[i]);
+            $(formset_inputs[i]).prop('disabled', status);
+        };
+        });
         });
     </script>
 {% endblock %}

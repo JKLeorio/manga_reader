@@ -117,7 +117,7 @@
 	<div id="carouselExampleControls" class="carousel slide">
 	  <div class="carousel-inner">
 	  	<div class="container" id="images_block" style="width:100%; min-height:100%;">
-			<img src="{{page.image.url}}" class="img-fluid" alt="..." style="display: block;margin-left: auto;margin-right: auto" position="{{pages|get_model_index:page}}">
+			<img src="{{page.image.url}}" class="img-fluid" alt="..." style="display: block;margin-left: auto;margin-right: auto" position="{{pages|get_model_index:page}}" page="{{page.number}}">
 		</div>
 	  </div>
 	  <button class="carousel-control-prev" type="button" arg="prev">
@@ -151,6 +151,7 @@ $(document).ready(function() {
         		$( "#images_block" ).append("<img src='"+ image_url + "' class='img-fluid' alt='...' position='" + $(this).attr("position") +"' page='" + $(this).attr("page") + "' style='display: block;margin-left: auto;margin-right: auto'>")
         	}
         	else {
+        		$("#pageN").html($("#pageN").html().slice(0, -1) + buff[0].getAttribute("page"));
         		$(buff[0]).css("display", "block");
         	}
         }
@@ -191,7 +192,6 @@ $(document).ready(function() {
 
         	var buff = $( "#images_block > img" ).filter(function() {
         		var the_position = get_position(Number(images[0].getAttribute("position")), button_type);
-        		console.log(the_position);
         		return the_position == this.getAttribute("position")
         	});
 
@@ -207,6 +207,8 @@ $(document).ready(function() {
         		}
         	}
         	else {
+        		console.log(buff[0]);
+        		$("#pageN").html($("#pageN").html().slice(0, -1) + buff[0].getAttribute("page"));
         		$(buff[0]).css("display", "block");
         	};
         };
