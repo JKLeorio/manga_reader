@@ -71,7 +71,7 @@ PagesFormSet = inlineformset_factory(
     Chapter,
     Page,
     form=PageForm,
-    extra=1,
+    extra=0,
     can_delete=False,
-    can_delete_extra=False
+    can_delete_extra=False,
 )

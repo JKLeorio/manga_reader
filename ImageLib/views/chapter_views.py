@@ -43,6 +43,7 @@ class ChapterDetailView(View):
         return render(request, self.template_name, context)
 
 
+# TODO add page replacement function for chapter update
 def validate_and_save_pages_archive(file, chapter):
     validate_archive_extension(file)
 
@@ -73,31 +74,35 @@ class ChapterInline:
     template_name = "chapter/chapter_create.html"
 
     def form_valid(self, form: ModelForm):
-        page_formsets = self.get_pages_formsets()
+        page_formset = self.get_pages_formset()
 
-        if not all((page.is_valid() for page in page_formsets)):
-            return self.render_to_response(self.get_context_data(form=form))
+        if not page_formset.is_valid():
+            form.add_error(None, "page formset error")
+            return super().form_invalid(form)
 
         data = form.cleaned_data
 
         if data['manga'].pk != data['volume'].manga.pk:
             raise ValidationError('bad request')
 
-        new_form = ChapterForm(data=data, files=form.files)
-        chapter = new_form.save()
+        chapter = self.object
+
+        if not self.object:
+            new_form = ChapterForm(data=data, files=form.files)
+            chapter = new_form.save()
 
         archive = form.files.get('images', None)
         if archive:
             validate_and_save_pages_archive(archive, chapter)
 
-        for form in page_formsets:
-            self.form_pages_valid(form)
+        for form in page_formset:
+            self.form_pages_valid(form, chapter)
 
-        # return super().form_valid(form)
+        return redirect("manga_list")
 
-    def form_pages_valid(self, form):
+    def form_pages_valid(self, form, chapter):
         page = form.save(commit=False)
-        page.chapter = self.object
+        page.chapter = chapter
         page.save()
 
 
@@ -114,11 +119,12 @@ class ChapterCreateView(ChapterInline, CreateView, LoginRequiredMixin):
         context['formset'] = PagesFormSet(prefix="pages")
         return context
 
-    def get_pages_formsets(self):
+    def get_pages_formset(self):
         if self.request.method == "GET":
             return PagesFormSet(prefix='pages')
         else:
-            return PagesFormSet(self.request.POST or None, self.request.FILES or None, prefix='pages'),
+            return PagesFormSet(self.request.POST or None, self.request.FILES or None, prefix='pages',
+                                form_kwargs={'empty_permitted': False})
 
 
 class ChapterUpdateView(ChapterInline, UpdateView, LoginRequiredMixin):
@@ -130,13 +136,14 @@ class ChapterUpdateView(ChapterInline, UpdateView, LoginRequiredMixin):
         form = self.get_form_class()(initial={"manga": chapter.volume.manga}, instance=chapter)
 
         context['form'] = form
-        context['formset'] = self.get_pages_formsets()
+        context['formset'] = self.get_pages_formset()
         return context
 
-    def get_pages_formsets(self):
+    def get_pages_formset(self):
         return PagesFormSet(
             self.request.POST or None,
             self.request.FILES or None,
             instance=self.object,
-            prefix='pages]'
+            prefix='pages',
+            form_kwargs={'empty_permitted': False}
         )
