@@ -31,26 +31,54 @@
 
     <br>
 
-    <div class="row w-100">
+    <div class="row row-cols-4">
         {% for manga in mangas %}
-            <a href="{% url 'manga_detail' manga.pk %}" class="col-4">
-                <div class="card manga-card">
-                    <img
-                        src="{{ manga.manga_cover.url }}"
-                        class="manga-image" alt="..."
-                    >
-                    <div class="card-body">
-                        <h5 class="card-title">{{ manga.name }}</h5>
-                        <i>год выпуска {{ manga.release_year }}</i>
-                        <p class="card-text">{{ manga.description|cut_description }}</p>
-                    </div>
-                </div>
-            </a>
+            <div class="col">
+              <div class="card" style="width: 14rem;">
+              <img src="{{manga.manga_cover.url}}" class="img-thumbnail" alt="...">
+              <div class="card-body">
+              <div class="d-flex justify-content-center">
+                  <a href="{% url 'manga_detail' manga.pk %}"
+                     class="btn btn-dark"
+                     data-bs-toggle="tooltip"
+                     data-bs-html="true"
+                     data-bs-placement="auto"
+                     data-bs-title="
+                            <div class='card bg-transparent'>
+                            <div class='card-body'>
+                            <div class='text-white'>
+                              <h5 class='card-title'>{{manga.name}}</h5>
+                              <p class='card-text'>{{manga.description|cut_description}}</p>
+                              <p class='card-text'><small>{{manga|verbose_name:'release_year'}} : {{manga.release_year}}</small></p>
+                              <p class='card-text'><small>{{manga|verbose_name:'status'}} : {{manga.status}}</small></p>
+                              <p class='card-text'><small>{{manga|verbose_name:'author'}} : {{manga.author}}</small></p>
+                              <p class='card-text'><small>{{manga|verbose_name:'painter'}} : {{manga.painter}}</small></p>
+                            </div>
+                            </div>
+                            </div>">
+                     {{ manga.name }}</a>
+            </div>
+          </div>
+      </div>
+    </div>
+    {% empty %}
+    <p>Пусто</p>
 
-        {% empty %}
-            <p>Пусто</p>
-        {% endfor %}
+    {% endfor %}
     </div>
 </div>
 
-{% endblock%}
+{% endblock %}
+
+{% block script %}
+
+<script type="text/javascript">
+const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+
+$('#ListDropDown').click(function(e){
+    e.stopPropagation();
+})
+</script>
+
+{% endblock %}
