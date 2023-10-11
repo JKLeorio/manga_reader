@@ -11,7 +11,6 @@ from ..forms import MangaForm
 from ..models import Manga
 
 
-
 class MangaCreateView(CreateView, LoginRequiredMixin):
     template_name = 'manga/manga_create.html'
     form_class = MangaForm
@@ -28,7 +27,8 @@ class MangaListView(FilterView):
         params = self.request.GET
         queryset = Manga.objects.all()
         order_by = params.get('order_by')
-        if order_by:
+        filter_order = ["-release_year", "release_year"]
+        if order_by in filter_order:
             queryset = queryset.order_by(order_by)
 
         return queryset

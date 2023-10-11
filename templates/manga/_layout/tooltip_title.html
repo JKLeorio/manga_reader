@@ -1,0 +1,14 @@
+{% load custom_tags_extra crispy_forms_tags %}
+
+<div class='card bg-transparent'>
+  <div class='card-body'>
+    <div class='text-white'>
+      <h5 class='card-title'>{{manga.name}}</h5>
+      <p class='card-text'>{{manga.description|cut_description}}</p>
+      <p class='card-text'><small>{{manga|verbose_name:'release_year'}} : {{manga.release_year}}</small></p>
+      <p class='card-text'><small>{{manga|verbose_name:'status'}} : {{manga.status}}</small></p>
+      <p class='card-text'><small>{{manga|verbose_name:'author'}} : {{manga.author}}</small></p>
+      <p class='card-text'><small>{{manga|verbose_name:'painter'}} : {{manga.painter}}</small></p>
+    </div>
+  </div>
+</div>

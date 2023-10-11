@@ -80,6 +80,8 @@ def set_get_parameter(request, parameter, value):
     new_request_get = request.GET.copy()
     new_request_get.update({parameter: value})
     for get_parameter, parameter_value in new_request_get.items():
+        if not parameter_value:
+            continue
         new_path += f'{get_parameter}={parameter_value}&'
     new_path = new_path[:-1]
     return new_path
